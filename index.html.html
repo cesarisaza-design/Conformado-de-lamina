@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratorio virtual de conformado de lámina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E7EBEE; --surface:#FFFFFF; --surface-2:#F3F5F7; --ink:#18212B; --ink-2:#4B5866; --line:#C9D1D9;
+  --steel:#1F3A5F; --steel-2:#2F5E93; --accent:#E3A70B; --accent-ink:#1B1400;
+  --ok:#2A7A4B; --warn:#A96400; --bad:#B3261E; --sheet:#8C9BAA; --tool:#3A4654; --tool-2:#5B6877;
+  --c1:#2F5E93; --c2:#C0392B; --c3:#2A7A4B; --c4:#8E44AD; --c5:#D68910;
+  --radius-l:10px; --radius-s:4px;
+  --font:"Archivo", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161C; --surface:#19212A; --surface-2:#202A35; --ink:#E4E9EE; --ink-2:#9CAEBF; --line:#2E3A47;
+    --steel:#8DB6E6; --steel-2:#6EA0DA; --accent:#F2C230; --accent-ink:#1B1400;
+    --ok:#5CC08A; --warn:#F0A840; --bad:#F2766D; --sheet:#9AAAB9; --tool:#5A6878; --tool-2:#7A8898;
+    --c1:#6EA0DA; --c2:#F2766D; --c3:#5CC08A; --c4:#C39BD3; --c5:#F5B041;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#11161C; --surface:#19212A; --surface-2:#202A35; --ink:#E4E9EE; --ink-2:#9CAEBF; --line:#2E3A47;
+    --steel:#8DB6E6; --steel-2:#6EA0DA; --accent:#F2C230; --accent-ink:#1B1400;
+    --ok:#5CC08A; --warn:#F0A840; --bad:#F2766D; --sheet:#9AAAB9; --tool:#5A6878; --tool-2:#7A8898;
+    --c1:#6EA0DA; --c2:#F2766D; --c3:#5CC08A; --c4:#C39BD3; --c5:#F5B041;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+h1,h2,h3,h4{font-stretch:78%;line-height:1.15;margin:0}
+h2{font-size:1.6rem;font-weight:750}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:.4em 0 .8em}
+a{color:var(--steel-2)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+img,canvas{max-width:100%}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--steel);color:#fff;display:flex;align-items:center;gap:18px;padding:10px 20px;flex-wrap:wrap}
+:root[data-theme="dark"] .top{background:#0C1116;color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .top{background:#0C1116;color:var(--ink)}}
+.brand h1{font-size:1.35rem;font-weight:800;font-stretch:70%;letter-spacing:.01em}
+.brand p{margin:0;font-size:.82rem;opacity:.78}
+.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.tabs button{background:transparent;border:1px solid rgba(255,255,255,.28);color:inherit;padding:7px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:.9rem}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.iconbtn{background:transparent;border:1px solid rgba(255,255,255,.28);color:inherit;border-radius:999px;width:36px;height:36px;cursor:pointer;font-size:1rem}
+main{max-width:1440px;margin:0 auto;padding:18px 20px 60px}
+.tab{display:none}
+.tab.active{display:block}
+
+/* ---------- info buttons & dialog ---------- */
+.i{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--steel-2);color:var(--steel-2);background:transparent;font-size:.72rem;font-weight:800;font-style:italic;font-family:Georgia,serif;cursor:pointer;padding:0;flex:0 0 auto;vertical-align:middle;line-height:1}
+.i:hover{background:var(--steel-2);color:#fff}
+dialog#info{border:none;border-radius:var(--radius-l);padding:0;max-width:560px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog#info::backdrop{background:rgba(10,20,30,.45)}
+.dlg-head{background:var(--steel);color:#fff;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+:root[data-theme="dark"] .dlg-head{background:#0C1116}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .dlg-head{background:#0C1116}}
+.dlg-head h3{font-size:1.25rem}
+.dlg-head .sym{font-family:Georgia,"Times New Roman",serif;font-style:italic;opacity:.85;font-size:1rem;margin-top:2px}
+.dlg-head button{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;width:32px;height:32px;cursor:pointer}
+.dlg-body{padding:14px 18px 18px;max-height:65vh;overflow:auto}
+.dlg-body h4{font-size:.95rem;margin:12px 0 2px;color:var(--steel-2)}
+.dlg-body .now{background:var(--surface-2);border-left:4px solid var(--accent);padding:8px 12px;border-radius:var(--radius-s);margin-bottom:6px}
+.eq{font-family:Georgia,"Times New Roman",serif;font-style:italic;background:var(--surface-2);padding:6px 10px;border-radius:var(--radius-s);display:block;margin:6px 0;overflow-x:auto;white-space:nowrap}
+
+/* ---------- lab ---------- */
+.procbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.procbtn{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-l);padding:10px 12px;cursor:pointer}
+.procbtn svg{flex:0 0 46px;height:36px}
+.procbtn b{display:block;font-stretch:80%;font-size:1.02rem}
+.procbtn span{font-size:.8rem;color:var(--ink-2)}
+.procbtn[aria-pressed="true"]{border-color:var(--steel-2);box-shadow:inset 0 0 0 1.5px var(--steel-2);background:var(--surface-2)}
+.lab-grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l)}
+.inputs{padding:4px 0}
+.grp{padding:12px 16px;border-bottom:1px solid var(--line)}
+.grp:last-child{border-bottom:none}
+.grp > h3,.grp > summary{margin-bottom:8px;display:flex;align-items:center;gap:8px}
+details.grp > summary{cursor:pointer;font-weight:700;font-stretch:78%;font-size:1.05rem;list-style:none}
+details.grp > summary::before{content:"▸";color:var(--steel-2)}
+details.grp[open] > summary::before{content:"▾"}
+.field{display:grid;grid-template-columns:minmax(0,1fr) 108px;align-items:center;gap:6px 8px;margin:7px 0}
+.field label{display:flex;align-items:center;gap:6px;font-size:.88rem}
+.field label .sy{font-family:Georgia,serif;font-style:italic;color:var(--ink-2)}
+.inwrap{display:flex;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-s)}
+.inwrap input,.inwrap select{width:100%;min-width:0;border:none;background:transparent;padding:6px 6px;text-align:right}
+.inwrap select{text-align:left}
+.inwrap .u{font-size:.75rem;color:var(--ink-2);padding-right:6px;white-space:nowrap}
+.field.wide{grid-template-columns:1fr}
+.field.chk{grid-template-columns:auto 1fr}
+select.big{width:100%;padding:8px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface-2)}
+.matprops{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;margin-top:8px;font-size:.82rem}
+.matprops div{display:flex;align-items:center;gap:5px;justify-content:space-between;border-bottom:1px dotted var(--line);padding:2px 0}
+.matprops div span:first-child{display:flex;gap:5px;align-items:center;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:5px 11px;font-size:.84rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--steel-2);color:#fff;border-color:var(--steel-2)}
+.exdesc{font-size:.84rem;color:var(--ink-2);margin:8px 0 0}
+
+.stage{overflow:hidden}
+.stage-head{display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap}
+.stage-head h2{font-size:1.35rem}
+.stage-head .sub{color:var(--ink-2);font-size:.88rem}
+.hazard{height:8px;background:repeating-linear-gradient(-45deg,var(--accent) 0 12px,#1b1b1b 12px 24px)}
+#sim{display:block;width:100%;height:380px;background:var(--surface-2)}
+.ctrl{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;border-top:1px solid var(--line)}
+.play{background:var(--steel);color:#fff;border:none;border-radius:999px;padding:8px 18px;font-weight:700;cursor:pointer;min-width:110px}
+:root[data-theme="dark"] .play{color:#0C1116}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .play{color:#0C1116}}
+.ctrl input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}
+.ctrl .lbl{font-size:.85rem;color:var(--ink-2);min-width:180px}
+.verdict{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-top:1px solid var(--line)}
+.verdict .badge{font-weight:800;font-stretch:78%;padding:4px 12px;border-radius:999px;white-space:nowrap}
+.badge.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.badge.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.badge.bad{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.warnlist{margin:0;padding:0;list-style:none;font-size:.88rem;display:grid;gap:4px}
+.warnlist li{display:flex;gap:8px}
+.warnlist li::before{content:"";flex:0 0 9px;height:9px;border-radius:50%;margin-top:6px;background:var(--ok)}
+.warnlist li.warn::before{background:var(--warn)}
+.warnlist li.bad::before{background:var(--bad)}
+
+.sec{margin-top:16px}
+.sec > h3{margin:0 0 8px 2px;display:flex;gap:8px;align-items:center}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.rgroup{grid-column:1/-1;font-weight:700;font-stretch:80%;color:var(--ink-2);margin-top:6px;font-size:.92rem}
+.rcard{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--steel-2);border-radius:var(--radius-s);padding:8px 10px}
+.rcard.warn{border-left-color:var(--warn)}
+.rcard.bad{border-left-color:var(--bad)}
+.rcard.ok{border-left-color:var(--ok)}
+.rcard .t{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:.8rem;color:var(--ink-2)}
+.rcard .v{font-size:1.3rem;font-weight:700;font-stretch:85%}
+.rcard .v small{font-size:.78rem;font-weight:500;color:var(--ink-2);margin-left:3px}
+.charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);padding:10px 10px 6px}
+.chartbox h4{display:flex;gap:8px;align-items:center;font-size:.95rem;margin:0 0 4px 4px}
+.chartbox canvas{display:block;width:100%;height:250px}
+.costwrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+.costbar{display:flex;height:28px;border-radius:var(--radius-s);overflow:hidden;margin:6px 0 10px}
+.costbar div{height:100%}
+table.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl td.n,.tbl th.n{text-align:right}
+.tbl th{font-weight:700;color:var(--ink-2);font-size:.82rem}
+.tblwrap{overflow-x:auto}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{border:1.5px solid var(--steel-2);background:var(--surface);color:var(--steel-2);border-radius:999px;padding:8px 16px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--steel-2);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+
+/* ---------- guide ---------- */
+.guide{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:start}
+.gnav{position:sticky;top:calc(80px + env(safe-area-inset-top,0px));padding:8px}
+.gnav button{display:block;width:100%;text-align:left;border:none;background:transparent;padding:8px 10px;border-radius:var(--radius-s);cursor:pointer;font-size:.92rem}
+.gnav button[aria-current="true"]{background:var(--surface-2);font-weight:700;color:var(--steel-2)}
+.gbody{padding:22px 28px;max-width:none}
+.gbody article{display:none;max-width:78ch}
+.gbody article.active{display:block}
+.gbody h2{margin-bottom:6px}
+.gbody h3{margin:20px 0 6px;color:var(--steel-2)}
+.gbody .lead{font-size:1.05rem;color:var(--ink-2)}
+.gbody ol,.gbody ul{padding-left:1.3em}
+.gbody li{margin:3px 0}
+.gcanvas{width:100%;height:230px;display:block;background:var(--surface-2);border-radius:var(--radius-l);margin:10px 0}
+.callout{border-left:4px solid var(--accent);background:var(--surface-2);padding:10px 14px;border-radius:var(--radius-s);margin:12px 0}
+.gotolab{margin-top:14px}
+
+/* ---------- materials ---------- */
+.matgrid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.matform{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;padding:14px 16px}
+.matform label{font-size:.82rem;color:var(--ink-2);display:grid;gap:2px}
+.matform input{border:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius-s);padding:6px}
+
+/* ---------- report ---------- */
+.rep-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.report{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);padding:28px 34px;max-width:1000px}
+.report h2{font-size:1.7rem}
+.report h3{margin:22px 0 8px;color:var(--steel-2);border-bottom:2px solid var(--line);padding-bottom:4px}
+.rep-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.rep-meta label{font-size:.8rem;color:var(--ink-2);display:grid;gap:2px}
+.rep-meta input{border:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius-s);padding:6px}
+.rep-imgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rep-imgs figure{margin:0;border:1px solid var(--line);border-radius:var(--radius-s);padding:6px;background:var(--surface)}
+.rep-imgs figcaption{font-size:.8rem;color:var(--ink-2)}
+.report textarea{width:100%;min-height:110px;border:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius-s);padding:8px}
+.empty{color:var(--ink-2);font-style:italic}
+
+@media (max-width:1100px){
+  .charts{grid-template-columns:1fr 1fr}
+  .procbar{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){
+  .lab-grid,.guide,.matgrid,.costwrap{grid-template-columns:1fr}
+  .gnav{position:static;display:flex;flex-wrap:wrap}
+  .gnav button{width:auto}
+  .charts{grid-template-columns:1fr}
+  .rep-meta,.rep-imgs{grid-template-columns:1fr}
+  .report{padding:18px}
+  .gbody{padding:16px}
+  #sim{height:300px}
+  .tabs{margin-left:0}
+  .top{position:static;padding:10px 14px;gap:8px}
+  .brand p,.procbtn span{display:none}
+  .tabs button{padding:6px 11px;font-size:.85rem}
+  main{padding:12px 12px 50px}
+}
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+@media print{
+  .top,.rep-tools,#tab-lab,#tab-guia,#tab-mat{display:none!important}
+  #tab-rep{display:block!important}
+  body{background:#fff;color:#000}
+  main{padding:0}
+  .report{border:none;padding:0;max-width:none}
+  .report input,.report textarea{border:none;background:transparent}
+  .rep-imgs figure,.tbl tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>Conformado de lámina metálica</h1>
+    <p>Laboratorio virtual con guía, simulación e informe</p>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button role="tab" data-tab="guia" aria-selected="false">Guía</button>
+    <button role="tab" data-tab="lab" aria-selected="true">Laboratorio</button>
+    <button role="tab" data-tab="mat" aria-selected="false">Materiales</button>
+    <button role="tab" data-tab="rep" aria-selected="false">Informe</button>
+  </nav>
+  <button class="iconbtn" id="themeBtn" title="Cambiar tema claro u oscuro" aria-label="Cambiar tema claro u oscuro">◐</button>
+</header>
+
+<main>
+<!-- ===================== GUÍA ===================== -->
+<section class="tab" id="tab-guia" role="tabpanel">
+  <div class="guide">
+    <nav class="panel gnav" id="gnav" aria-label="Temas de la guía">
+      <button data-g="intro" aria-current="true">Introducción</button>
+      <button data-g="mat">El material y su conformabilidad</button>
+      <button data-g="corte">Corte por cizalladura</button>
+      <button data-g="doblado">Doblado</button>
+      <button data-g="embuticion">Embutición profunda</button>
+      <button data-g="estirado">Estirado sobre forma</button>
+      <button data-g="costos">Costos del proceso</button>
+      <button data-g="uso">Cómo usar el laboratorio</button>
+      <button data-g="refs">Referencias</button>
+    </nav>
+    <div class="panel gbody">
+      <article data-g="intro" class="active">
+        <h2>Procesos de conformado de lámina</h2>
+        <p class="lead">Una lámina metálica (espesor típico de 0,2 a 6 mm) se transforma en una pieza útil cortándola o deformándola plásticamente en frío, casi siempre con una prensa y un juego de herramientas llamado troquel.</p>
+        <p>Piensa en objetos cotidianos: la arandela de un tornillo se corta por cizalladura, el soporte en L de una repisa se dobla, una olla o el cuerpo de un extintor se embuten, y la puerta de un automóvil se estira sobre una forma. Todos parten de una lámina plana y todos dependen de tres cosas: el material, la geometría de la herramienta y la fuerza de la prensa.</p>
+        <h3>Las cuatro familias que estudiarás</h3>
+        <ul>
+          <li><b>Corte por cizalladura</b> (troquelado y punzonado): el material se separa entre un punzón y una matriz con una holgura pequeña.</li>
+          <li><b>Doblado</b>: se deforma la lámina alrededor de un eje recto; la cara externa se estira y la interna se comprime.</li>
+          <li><b>Embutición profunda</b>: un disco se transforma en un vaso hueco; la brida se comprime circunferencialmente mientras la pared se estira.</li>
+          <li><b>Estirado sobre forma</b>: la lámina, sujeta por mordazas, se tensa sobre un bloque para obtener paneles de gran tamaño y curvatura suave.</li>
+        </ul>
+        <h3>Trabajo en frío: ventajas y costos</h3>
+        <p>Al trabajar en frío se obtienen buenas tolerancias y acabados, y la pieza gana resistencia por endurecimiento por deformación. El precio es que las fuerzas son altas, el material tiene un límite de deformación (se agrieta o se adelgaza) y la pieza recupera parte de su forma al retirar la carga (recuperación elástica).</p>
+        <div class="callout">En el laboratorio cada variable tiene un botón <span class="i" aria-hidden="true">i</span>. Ábrelo para leer qué significa, cómo afecta al proceso y a la pieza, y cuál es su valor actual.</div>
+      </article>
+
+      <article data-g="mat">
+        <h2>El material y su conformabilidad</h2>
+        <p class="lead">El comportamiento plástico de la lámina se resume con unos pocos números que encontrarás en la base de datos de materiales.</p>
+        <h3>Curva de flujo</h3>
+        <p>La resistencia a la fluencia aumenta a medida que el metal se deforma. Se modela con la ley de Hollomon:</p>
+        <span class="eq">σ<sub>f</sub> = K · ε<sup>n</sup></span>
+        <p><b>K</b> es el coeficiente de resistencia y <b>n</b> el exponente de endurecimiento. Un n alto (latón, cobre, inoxidable austenítico) reparte la deformación y retrasa el adelgazamiento localizado; en tracción uniaxial el cuello aparece cuando la deformación verdadera iguala a n.</p>
+        <h3>Anisotropía</h3>
+        <p>El coeficiente de Lankford <b>r</b> es la relación entre la deformación en el ancho y en el espesor en una probeta de tracción. El promedio r̄ mide cuánto se resiste la lámina a adelgazarse: un r̄ alto mejora la embutición. La anisotropía planar Δr produce las orejas en el borde de los vasos embutidos.</p>
+        <h3>Diagrama límite de conformado (FLD)</h3>
+        <p>Cada punto de la lámina tiene una deformación mayor ε₁ y una menor ε₂. La curva límite (FLC) separa las combinaciones seguras de las que producen estricción y rotura. Su punto más bajo, FLD₀, está en deformación plana (ε₂ = 0), y la estimación de Keeler lo relaciona con el espesor y con n:</p>
+        <span class="eq">FLD₀ (%) ≈ (23,3 + 14,13·t) · n / 0,21</span>
+        <p>El laboratorio usa esta estimación (con un factor reducido para aluminio) como herramienta didáctica; en diseño real la FLC se mide experimentalmente, por ejemplo con el ensayo Nakajima.</p>
+      </article>
+
+      <article data-g="corte">
+        <h2>Corte por cizalladura</h2>
+        <p class="lead">Un punzón empuja la lámina contra una matriz. El metal se deforma, se bruñe contra las aristas y finalmente se fractura a lo largo de la holgura.</p>
+        <canvas class="gcanvas" data-proc="corte" data-x="0.42" aria-label="Esquema del corte por cizalladura"></canvas>
+        <h3>Secuencia del corte</h3>
+        <ol>
+          <li>El punzón toca la lámina y la deforma elásticamente, luego plásticamente; se forma el redondeo del borde.</li>
+          <li>El metal fluye contra las paredes del punzón y la matriz, dejando una banda lisa y brillante: la zona bruñida.</li>
+          <li>Se inician grietas en las dos aristas; si la holgura es la correcta, se encuentran y la pieza se separa con una zona de fractura rugosa.</li>
+          <li>Queda una rebaba en el borde. El punzón expulsa el retal o la pieza a través de la matriz.</li>
+        </ol>
+        <h3>Ecuaciones principales</h3>
+        <span class="eq">F = 0,7 · S<sub>u</sub> · t · L &nbsp;&nbsp;(S<sub>u</sub>: resistencia a la tracción, L: perímetro cortado)</span>
+        <span class="eq">c = A<sub>c</sub> · t &nbsp;&nbsp;(holgura por lado recomendada)</span>
+        <span class="eq">Troquelado: D<sub>matriz</sub> = D<sub>pieza</sub>, D<sub>punzón</sub> = D − 2c &nbsp;|&nbsp; Punzonado: D<sub>punzón</sub> = D<sub>agujero</sub>, D<sub>matriz</sub> = D + 2c</span>
+        <span class="eq">W ≈ F · p · t &nbsp;&nbsp;(p: fracción de penetración antes de la fractura)</span>
+        <h3>Ejemplo: arandela plana M10</h3>
+        <p>Una arandela de acero de 2 mm con diámetro exterior de 20 mm y agujero de 10,5 mm se hace en un troquel compuesto: en un golpe se corta el contorno exterior y el agujero. El perímetro cortado es π(20 + 10,5) ≈ 96 mm y la fuerza queda cerca de 40 kN (unas 4 toneladas).</p>
+        <h3>Defectos típicos</h3>
+        <ul>
+          <li>Holgura muy pequeña: doble bruñido, fuerza mayor y desgaste acelerado del herramental.</li>
+          <li>Holgura excesiva: rebaba alta, redondeo grande y borde inclinado.</li>
+          <li>Punzón muy delgado frente al espesor: riesgo de pandeo y rotura del punzón.</li>
+        </ul>
+        <button class="btn primary gotolab" data-goto="corte">Abrir el laboratorio de corte</button>
+      </article>
+
+      <article data-g="doblado">
+        <h2>Doblado</h2>
+        <p class="lead">La lámina se deforma alrededor de un eje recto. La fibra neutra conserva su longitud; la cara exterior trabaja en tracción y la interior en compresión.</p>
+        <canvas class="gcanvas" data-proc="doblado" data-x="0.7" aria-label="Esquema del doblado en V"></canvas>
+        <h3>Ecuaciones principales</h3>
+        <span class="eq">F = K<sub>bf</sub> · S<sub>u</sub> · w · t² / D &nbsp;&nbsp;(K<sub>bf</sub> = 1,33 en V; 2,67 en U; 0,33 por arrastre)</span>
+        <span class="eq">e<sub>ext</sub> = 1 / (2R/t + 1) &nbsp;&nbsp;|&nbsp;&nbsp; R<sub>mín</sub>/t = 50/RA − 1</span>
+        <span class="eq">BA = 2π · (α/360) · (R + K<sub>ba</sub>·t)</span>
+        <span class="eq">R<sub>i</sub>/R<sub>f</sub> = 4(R<sub>i</sub>Y/Et)³ − 3(R<sub>i</sub>Y/Et) + 1 &nbsp;&nbsp;(recuperación elástica)</span>
+        <h3>Recuperación elástica</h3>
+        <p>Al retirar el punzón, la zona elástica cercana a la fibra neutra devuelve parte del ángulo. Es mayor con materiales de alta relación Y/E (titanio, aceros de alta resistencia, aluminio endurecido) y con radios grandes. Se compensa sobredoblando o doblando a fondo (acuñado).</p>
+        <h3>Ejemplo: soporte en L para repisa</h3>
+        <p>Una platina galvanizada de 2 mm y 40 mm de ancho se dobla a 90° en una matriz en V de 16 mm. La fuerza ronda los 5 kN y la pieza recupera menos de un grado; con aceros de alta resistencia o titanio la recuperación es mucho mayor y hay que sobredoblar.</p>
+        <h3>Defectos típicos</h3>
+        <ul>
+          <li>Grietas en la cara exterior cuando el radio es menor que el mínimo del material.</li>
+          <li>Ángulo fuera de tolerancia por recuperación elástica.</li>
+          <li>Alas demasiado cortas que se hunden en la matriz, y marcas por abertura de matriz pequeña.</li>
+        </ul>
+        <button class="btn primary gotolab" data-goto="doblado">Abrir el laboratorio de doblado</button>
+      </article>
+
+      <article data-g="embuticion">
+        <h2>Embutición profunda</h2>
+        <p class="lead">Un punzón empuja un disco a través de una matriz mientras un pisador sujeta la brida. El diámetro exterior del disco se reduce y el material fluye hacia la pared del vaso.</p>
+        <canvas class="gcanvas" data-proc="embuticion" data-x="0.55" aria-label="Esquema de la embutición profunda"></canvas>
+        <h3>Ecuaciones principales</h3>
+        <span class="eq">D<sub>0</sub> = √(d² + 4·d·h) &nbsp;&nbsp;(disco para vaso cilíndrico de pared delgada)</span>
+        <span class="eq">DR = D<sub>0</sub>/d ≤ LDR ≈ 2,0 a 2,4 &nbsp;&nbsp;|&nbsp;&nbsp; reducción r = (D<sub>0</sub> − d)/D<sub>0</sub> &lt; 0,5</span>
+        <span class="eq">F = π · d · t · S<sub>u</sub> · (D<sub>0</sub>/d − 0,7)</span>
+        <span class="eq">F<sub>h</sub> = 0,015 · Y · π · [D<sub>0</sub>² − (d + 2,2t + 2R<sub>d</sub>)²]</span>
+        <h3>Estados de esfuerzo</h3>
+        <p>En la brida el esfuerzo radial es de tracción y el circunferencial de compresión; por eso aparecen arrugas si el pisador es insuficiente. En la pared y en el radio del punzón la lámina se estira en deformación plana; allí se adelgaza y es donde se rompe si la relación de embutición es excesiva.</p>
+        <h3>Ejemplo: botella de extintor</h3>
+        <p>Un cilindro de 110 mm de diámetro y 280 mm de altura en acero de 2,2 mm necesita un disco de unos 370 mm: la relación 3,3 supera con creces el límite, así que se hace en varias etapas (embutición y reembutición), a menudo con recocidos intermedios.</p>
+        <h3>Defectos típicos</h3>
+        <ul>
+          <li>Arrugas en la brida o en la pared por fuerza de pisador baja.</li>
+          <li>Desgarre en el fondo por relación excesiva, pisador demasiado alto o mala lubricación.</li>
+          <li>Orejas en el borde por anisotropía planar (Δr ≠ 0), y rayado superficial por lubricación deficiente.</li>
+        </ul>
+        <button class="btn primary gotolab" data-goto="embuticion">Abrir el laboratorio de embutición</button>
+      </article>
+
+      <article data-g="estirado">
+        <h2>Estirado sobre forma</h2>
+        <p class="lead">La lámina se sujeta con mordazas y se tensa sobre un bloque con la forma deseada. Toda la sección queda en fluencia, por lo que la recuperación elástica es mínima.</p>
+        <canvas class="gcanvas" data-proc="estirado" data-x="0.75" aria-label="Esquema del estirado sobre forma"></canvas>
+        <h3>Ecuaciones principales</h3>
+        <span class="eq">ε = ln(1 + e) &nbsp;&nbsp;|&nbsp;&nbsp; σ<sub>f</sub> = K·ε<sup>n</sup></span>
+        <span class="eq">F = σ<sub>f</sub> · w · t<sub>actual</sub></span>
+        <span class="eq">Uniaxial: t = t<sub>0</sub>·e<sup>−ε/2</sup> &nbsp;&nbsp;|&nbsp;&nbsp; Deformación plana: t = t<sub>0</sub>·e<sup>−ε</sup></span>
+        <h3>Ejemplo: panel de puerta de automóvil y piel de fuselaje</h3>
+        <p>Los paneles grandes y de curvatura suave (fuselajes de avión, techos de bus, puertas) se estiran unos pocos porcentajes. Así el panel queda plastificado en todo su espesor y conserva la forma sin arrugas.</p>
+        <h3>Límites del proceso</h3>
+        <ul>
+          <li>En tracción uniaxial la estricción comienza cuando ε ≈ n.</li>
+          <li>En paneles anchos el estado es de deformación plana, el más severo del diagrama límite.</li>
+          <li>La zona de mordazas se desperdicia y se recorta.</li>
+        </ul>
+        <button class="btn primary gotolab" data-goto="estirado">Abrir el laboratorio de estirado</button>
+      </article>
+
+      <article data-g="costos">
+        <h2>Costos del proceso</h2>
+        <p class="lead">El costo unitario combina material, tiempo de máquina, mano de obra, energía y la amortización del herramental.</p>
+        <span class="eq">C<sub>u</sub> = C<sub>mat</sub> + (C<sub>máq</sub> + C<sub>MO</sub>)·t<sub>ciclo</sub> + C<sub>energía</sub> + C<sub>herramental</sub>/N<sub>lote</sub></span>
+        <ul>
+          <li><b>Material</b>: masa bruta de lámina (pieza más retal) por su precio, menos lo que se recupera vendiendo la chatarra.</li>
+          <li><b>Máquina y mano de obra</b>: tarifa horaria por el tiempo de ciclo; en embutición multietapa se multiplica por el número de etapas.</li>
+          <li><b>Energía</b>: trabajo de deformación dividido por la eficiencia de la prensa, más el consumo base del motor (estimado como 0,11 kW por tonelada de capacidad con un factor de carga de 0,3).</li>
+          <li><b>Herramental</b>: el troquel es costoso; en lotes pequeños domina el costo unitario, en lotes grandes se diluye.</li>
+        </ul>
+        <div class="callout">Los precios de material y las tarifas vienen con valores de referencia en pesos colombianos (COP) para fines didácticos. Ajústalos en el panel de costos con cotizaciones reales.</div>
+      </article>
+
+      <article data-g="uso">
+        <h2>Cómo usar el laboratorio</h2>
+        <ol>
+          <li>Elige un proceso en la barra superior del laboratorio.</li>
+          <li>Carga un ejemplo de pieza (arandela, soporte, olla, extintor...) o introduce tus propios valores.</li>
+          <li>Selecciona el material. Consulta sus propiedades con el botón <span class="i" aria-hidden="true">i</span>.</li>
+          <li>Reproduce la simulación o mueve el control de carrera: el marcador vertical de las curvas sigue la posición del ariete. El último tramo de la carrera muestra la descarga.</li>
+          <li>Revisa el veredicto, los resultados y los costos. Cambia una variable a la vez y observa su efecto.</li>
+          <li>Pulsa «Agregar ensayo al informe» para comparar condiciones, y abre la pestaña Informe para imprimir o guardar en PDF.</li>
+        </ol>
+        <h3>Preguntas para explorar</h3>
+        <ul>
+          <li>¿Qué pasa con la rebaba y la rugosidad si duplicas la holgura de corte?</li>
+          <li>¿Por qué el titanio recupera tanto ángulo en el doblado?</li>
+          <li>¿Cuántas etapas necesita el casquillo de latón y por qué?</li>
+          <li>¿Cómo cambia el costo unitario de la arandela entre un lote de 1 000 y uno de 100 000 piezas?</li>
+        </ul>
+        <div class="callout">Los modelos son analíticos y semiempíricos (Groover, Kalpakjian, Schuler). Sirven para comprender tendencias y órdenes de magnitud; el diseño final de un troquel requiere simulación por elementos finitos y ensayos.</div>
+      </article>
+
+      <article data-g="refs">
+        <h2>Referencias</h2>
+        <h3>Bibliografía</h3>
+        <ul>
+          <li>Groover, M. P. <i>Fundamentos de manufactura moderna</i>. McGraw-Hill. Capítulos de trabajo metálico de láminas.</li>
+          <li>Kalpakjian, S. y Schmid, S. R. <i>Manufactura, ingeniería y tecnología</i>. Pearson. Capítulo de conformado de hojas metálicas.</li>
+          <li>Schuler GmbH. <i>Metal Forming Handbook</i>. Springer.</li>
+          <li>Marciniak, Z., Duncan, J. L. y Hu, S. J. <i>Mechanics of Sheet Metal Forming</i>. Butterworth-Heinemann.</li>
+          <li>Keeler, S. P. y Brazier, W. G. Relación entre FLD₀, espesor y exponente n (estimación de la curva límite).</li>
+        </ul>
+        <h3>Laboratorios y material didáctico similares</h3>
+        <ul>
+          <li><a href="https://msvs1-dei.vlabs.ac.in/" target="_blank" rel="noopener">Metal Forming Virtual Simulation Lab (Virtual Labs, India)</a>: simulaciones web de forja, extrusión, estirado, hidroconformado y trabajo de lámina.</li>
+          <li><a href="https://www.hs-esslingen.de/en/mechanical-and-systems-engineering/research-laboratories/laboratories/metal-forming-technology-and-laser-material-processing-laboratory-utl" target="_blank" rel="noopener">Laboratorio de conformado de Hochschule Esslingen</a>: prácticas de embutición, doblado, estirado, corte y determinación de la curva límite.</li>
+          <li><a href="https://accedacris.ulpgc.es/bitstream/10553/55107/2/Material_Didactico_Chapa.pdf" target="_blank" rel="noopener">Material didáctico de conformación de chapa, ULPGC</a>: diseño de pieza y troquel.</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== LABORATORIO ===================== -->
+<section class="tab active" id="tab-lab" role="tabpanel">
+  <div class="procbar" id="procbar" role="group" aria-label="Proceso"></div>
+  <div class="lab-grid">
+    <aside class="panel inputs">
+      <div class="grp">
+        <h3>Material <button class="i" data-info="material" aria-label="Información: material">i</button></h3>
+        <select class="big" id="matSel" aria-label="Material"></select>
+        <div class="matprops" id="matProps"></div>
+      </div>
+      <div class="grp">
+        <h3>Ejemplo de pieza <button class="i" data-info="ejemplo" aria-label="Información: ejemplos">i</button></h3>
+        <div class="chips" id="exChips"></div>
+        <p class="exdesc" id="exDesc"></p>
+      </div>
+      <div class="grp">
+        <h3>Variables del proceso</h3>
+        <div id="procInputs"></div>
+      </div>
+      <div class="grp">
+        <h3>Prensa y producción</h3>
+        <div id="prodInputs"></div>
+      </div>
+      <details class="grp">
+        <summary>Costos de operación</summary>
+        <div id="costInputs"></div>
+      </details>
+    </aside>
+
+    <div>
+      <div class="panel stage">
+        <div class="hazard" aria-hidden="true"></div>
+        <div class="stage-head">
+          <h2 id="stageTitle">Proceso</h2>
+          <span class="sub" id="stageSub"></span>
+        </div>
+        <canvas id="sim" aria-label="Simulación visual del proceso"></canvas>
+        <div class="ctrl">
+          <button class="play" id="playBtn">▶ Simular</button>
+          <input type="range" id="stroke" min="0" max="120" step="0.5" value="60" aria-label="Posición del ariete">
+          <span class="lbl" id="strokeLbl"></span>
+          <button class="i" data-info="carrera" aria-label="Información: carrera">i</button>
+        </div>
+        <div class="verdict">
+          <span class="badge ok" id="verdictBadge">Viable</span>
+          <ul class="warnlist" id="warnList"></ul>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3>Resultados del cálculo</h3>
+        <div class="results" id="results"></div>
+      </div>
+
+      <div class="sec">
+        <h3>Curvas y esfuerzos</h3>
+        <div class="charts">
+          <div class="chartbox"><h4><span id="ch1t"></span><button class="i" id="ch1i" aria-label="Información de la gráfica">i</button></h4><canvas id="ch1"></canvas></div>
+          <div class="chartbox"><h4><span id="ch2t"></span><button class="i" id="ch2i" aria-label="Información de la gráfica">i</button></h4><canvas id="ch2"></canvas></div>
+          <div class="chartbox"><h4><span id="ch3t"></span><button class="i" id="ch3i" aria-label="Información de la gráfica">i</button></h4><canvas id="ch3"></canvas></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3>Costos por pieza <button class="i" data-info="costoTotal" aria-label="Información: costos">i</button></h3>
+        <div class="costwrap">
+          <div class="panel" style="padding:12px 14px">
+            <div class="costbar" id="costBar"></div>
+            <div class="tblwrap"><table class="tbl" id="costTbl"></table></div>
+          </div>
+          <div class="panel" style="padding:12px 14px">
+            <div class="tblwrap"><table class="tbl" id="costLot"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="saveRun">Agregar ensayo al informe</button>
+        <button class="btn" id="goRep">Ver informe</button>
+        <button class="btn" id="goGuide">Leer la guía de este proceso</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MATERIALES ===================== -->
+<section class="tab" id="tab-mat" role="tabpanel">
+  <div class="matgrid">
+    <div class="panel" style="padding:14px 16px">
+      <h2 style="margin-bottom:6px">Base de datos de materiales</h2>
+      <p style="color:var(--ink-2);margin-top:0">Propiedades típicas a temperatura ambiente en estado de suministro. Toca el botón de cada columna para ver qué significa.</p>
+      <div class="tblwrap"><table class="tbl" id="matTable"></table></div>
+    </div>
+    <div>
+      <div class="chartbox"><h4>Curvas de flujo σ = K·εⁿ <button class="i" data-info="g_flujo" aria-label="Información: curva de flujo">i</button></h4><canvas id="matChart" style="height:320px"></canvas></div>
+      <div class="panel sec">
+        <h3 style="padding:12px 16px 0">Agregar material propio</h3>
+        <form class="matform" id="matForm">
+          <label style="grid-column:1/-1">Nombre<input name="name" required value="Mi material"></label>
+          <label>E (GPa)<input name="E" type="number" step="any" value="200" required></label>
+          <label>Y (MPa)<input name="Y" type="number" step="any" value="250" required></label>
+          <label>Su (MPa)<input name="UTS" type="number" step="any" value="380" required></label>
+          <label>K (MPa)<input name="K" type="number" step="any" value="600" required></label>
+          <label>n<input name="n" type="number" step="any" value="0.2" required></label>
+          <label>r̄<input name="r" type="number" step="any" value="1.2" required></label>
+          <label>Δr<input name="dr" type="number" step="any" value="0.3" required></label>
+          <label>RA (%)<input name="RA" type="number" step="any" value="55" required></label>
+          <label>Alargamiento (%)<input name="el" type="number" step="any" value="30" required></label>
+          <label>ρ (kg/m³)<input name="rho" type="number" step="any" value="7850" required></label>
+          <label>Precio (COP/kg)<input name="price" type="number" step="any" value="6000" required></label>
+          <label>Holgura A<sub>c</sub><input name="Ac" type="number" step="any" value="0.06" required></label>
+          <label>Familia<select name="fam" style="border:1px solid var(--line);background:var(--surface-2);border-radius:4px;padding:6px"><option value="acero">Acero</option><option value="al">Aluminio</option><option value="cu">Cobre y aleaciones</option><option value="ti">Titanio</option></select></label>
+          <div style="grid-column:1/-1"><button class="btn primary" type="submit">Agregar a la base de datos</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INFORME ===================== -->
+<section class="tab" id="tab-rep" role="tabpanel">
+  <div class="rep-tools">
+    <button class="btn primary" id="printBtn">Imprimir o guardar como PDF</button>
+    <button class="btn" id="refreshRep">Actualizar con la simulación actual</button>
+    <button class="btn" id="clearRuns">Borrar ensayos guardados</button>
+  </div>
+  <div class="report" id="report"></div>
+</section>
+</main>
+
+<dialog id="info" aria-labelledby="dlgTitle">
+  <div class="dlg-head">
+    <div><h3 id="dlgTitle"></h3><div class="sym" id="dlgSym"></div></div>
+    <button id="dlgClose" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="dlg-body" id="dlgBody"></div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+/* ================= BASE DE DATOS DE MATERIALES =================
+   E [GPa], Y [MPa], UTS [MPa], K [MPa], n, r (r̄), dr (Δr), RA [%], el [%], rho [kg/m3], price [COP/kg], Ac (holgura), fam */
+const MATS = [
+ {id:"a1008", name:"Acero bajo carbono AISI 1008 (DC04) laminado en frío", E:207,Y:180,UTS:300,K:530,n:0.26,r:1.6,dr:0.4,RA:65,el:40,rho:7850,price:5200,Ac:0.060,fam:"acero"},
+ {id:"galv", name:"Acero galvanizado DX51D+Z", E:207,Y:240,UTS:350,K:580,n:0.20,r:1.3,dr:0.4,RA:55,el:30,rho:7850,price:6200,Ac:0.060,fam:"acero"},
+ {id:"hsla", name:"Acero HSLA S355MC", E:207,Y:355,UTS:470,K:780,n:0.17,r:1.0,dr:0.2,RA:40,el:24,rho:7850,price:6400,Ac:0.075,fam:"acero"},
+ {id:"ss304", name:"Acero inoxidable AISI 304 recocido", E:193,Y:215,UTS:580,K:1275,n:0.45,r:1.0,dr:0.1,RA:60,el:55,rho:8000,price:21000,Ac:0.060,fam:"acero"},
+ {id:"al1100", name:"Aluminio 1100-O", E:69,Y:35,UTS:90,K:180,n:0.20,r:0.9,dr:0.3,RA:75,el:35,rho:2710,price:17500,Ac:0.045,fam:"al"},
+ {id:"al3003", name:"Aluminio 3003-O", E:69,Y:42,UTS:110,K:200,n:0.23,r:0.8,dr:0.35,RA:70,el:30,rho:2730,price:18000,Ac:0.045,fam:"al"},
+ {id:"al5052", name:"Aluminio 5052-H32", E:70,Y:195,UTS:230,K:385,n:0.13,r:0.7,dr:0.3,RA:33,el:12,rho:2680,price:19500,Ac:0.045,fam:"al"},
+ {id:"cu110", name:"Cobre C11000 recocido", E:117,Y:70,UTS:220,K:315,n:0.54,r:0.9,dr:0.15,RA:70,el:45,rho:8940,price:52000,Ac:0.050,fam:"cu"},
+ {id:"ms70", name:"Latón C26000 (70/30) recocido", E:110,Y:110,UTS:330,K:895,n:0.49,r:0.9,dr:0.2,RA:62,el:60,rho:8530,price:42000,Ac:0.060,fam:"cu"},
+ {id:"ti2", name:"Titanio grado 2", E:105,Y:345,UTS:450,K:800,n:0.15,r:3.0,dr:0.6,RA:30,el:20,rho:4510,price:160000,Ac:0.075,fam:"ti"}
+];
+
+/* ================= DICCIONARIO DE VARIABLES (cuadros de diálogo) =================
+   n: nombre, s: símbolo, u: unidad, d: qué es, p: efecto en el proceso, q: efecto en la pieza, e: ecuación */
+const V = {
+ material:{n:"Material de la lámina",s:"",u:"",d:"Aleación y estado (recocido, endurecido) de la lámina que se va a conformar. Cada material trae sus propiedades mecánicas, su densidad, su precio de referencia y su holgura de corte recomendada.",p:"Define la fuerza necesaria (a través de Su, Y y K), cuánto se puede deformar antes de fallar (n, r̄, RA) y cuánta recuperación elástica tendrá (Y/E).",q:"Determina la resistencia final, el peso, el acabado, la resistencia a la corrosión y buena parte del costo de la pieza."},
+ ejemplo:{n:"Ejemplos de pieza",s:"",u:"",d:"Casos reales y cotidianos precargados con material, geometría y condiciones de producción razonables.",p:"Sirven como punto de partida: carga uno, entiende el resultado y luego cambia una sola variable para ver su efecto.",q:"Cada ejemplo corresponde a un producto que puedes reconocer: arandelas, soportes, ollas, cilindros de extintor, paneles de automóvil."},
+ E:{n:"Módulo de elasticidad",s:"E",u:"GPa",d:"Pendiente de la zona elástica de la curva esfuerzo-deformación: indica la rigidez del material.",p:"Con un E bajo (aluminio, titanio) la lámina se deforma más elásticamente antes de fluir, por lo que la recuperación elástica en el doblado es mayor.",q:"Influye en la rigidez de la pieza terminada y en cuánto se aleja el ángulo final del ángulo de la herramienta.",e:"σ = E·ε (zona elástica)"},
+ Y:{n:"Límite de fluencia",s:"Y",u:"MPa",d:"Esfuerzo al cual el material empieza a deformarse de manera permanente.",p:"Interviene en la fuerza del pisador en embutición y en la recuperación elástica (relación Y/E). Un Y alto exige más fuerza de sujeción y produce más recuperación.",q:"Una pieza con alto Y resiste mejor las cargas de servicio sin deformarse, pero es más difícil de conformar con precisión."},
+ UTS:{n:"Resistencia a la tracción",s:"Su",u:"MPa",d:"Esfuerzo ingenieril máximo que soporta el material en el ensayo de tracción.",p:"Es la base de las fórmulas de fuerza en corte (resistencia al corte ≈ 0,7·Su), doblado y embutición. La fuerza crece proporcionalmente con Su.",q:"Indica la resistencia de la pieza. Materiales de alta Su exigen prensas y herramentales más robustos."},
+ K:{n:"Coeficiente de resistencia",s:"K",u:"MPa",d:"Constante de la ley de Hollomon σ = K·εⁿ; es el esfuerzo de flujo que tendría el material a una deformación verdadera de 1.",p:"Junto con n define cuánto aumenta el esfuerzo de flujo durante la deformación y por tanto la fuerza en estirado y la energía consumida.",q:"Refleja el endurecimiento que queda en la pieza conformada.",e:"σf = K·εⁿ"},
+ n:{n:"Exponente de endurecimiento por deformación",s:"n",u:"",d:"Exponente de la ley de Hollomon; mide qué tan rápido se endurece el material al deformarse.",p:"Un n alto distribuye la deformación y retrasa la estricción: en tracción uniaxial el cuello aparece cuando ε = n. También eleva la curva límite de conformado (FLD₀).",q:"Piezas con zonas muy estiradas (paneles, vasos) salen más uniformes en espesor y con menor riesgo de rotura cuando n es alto.",e:"ε_estricción = n"},
+ r:{n:"Anisotropía normal promedio (Lankford)",s:"r̄",u:"",d:"Relación entre la deformación en el ancho y la deformación en el espesor en una probeta de tracción, promediada en tres direcciones (0°, 45°, 90°).",p:"Un r̄ alto significa que la lámina se resiste a adelgazarse; eleva la relación límite de embutición (LDR) y permite vasos más profundos en una etapa.",q:"Paredes con espesor más uniforme y menor riesgo de desgarre en el fondo.",e:"r̄ = (r₀ + 2r₄₅ + r₉₀)/4"},
+ dr:{n:"Anisotropía planar",s:"Δr",u:"",d:"Diferencia de anisotropía entre las direcciones de laminación y a 45°.",p:"No cambia mucho la fuerza, pero hace que el material fluya distinto según la dirección.",q:"Produce orejas (ondulaciones) en el borde de los vasos embutidos, que luego hay que recortar: más desperdicio y una operación extra.",e:"Δr = (r₀ − 2r₄₅ + r₉₀)/2"},
+ RA:{n:"Reducción de área",s:"RA",u:"%",d:"Porcentaje de reducción de la sección transversal de la probeta de tracción en el punto de rotura; mide la ductilidad local.",p:"Define el radio mínimo de doblado y la penetración del punzón antes de la fractura en el corte.",q:"Con RA baja la cara exterior del doblez se agrieta si el radio es pequeño.",e:"R_mín/t = 50/RA − 1"},
+ el:{n:"Alargamiento a la rotura",s:"A",u:"%",d:"Deformación ingenieril total de la probeta de tracción cuando se rompe.",p:"Indicador general de ductilidad; los materiales con alto alargamiento aceptan procesos más severos.",q:"Relacionado con la capacidad de absorber deformación sin romperse."},
+ rho:{n:"Densidad",s:"ρ",u:"kg/m³",d:"Masa por unidad de volumen del material.",p:"No afecta la fuerza, pero determina la masa de lámina consumida.",q:"Define el peso de la pieza y, junto con el precio por kilogramo, el costo de material."},
+ price:{n:"Precio del material",s:"",u:"COP/kg",d:"Precio de referencia de la lámina en pesos colombianos por kilogramo. Es un valor didáctico: actualízalo con cotizaciones reales.",p:"No cambia la mecánica del proceso.",q:"Impacta directamente el costo unitario, sobre todo en piezas con mucho desperdicio."},
+ Ac:{n:"Tolerancia de holgura del material",s:"Ac",u:"",d:"Factor recomendado para calcular la holgura por lado en el corte: c = Ac·t. Vale 0,045 para aluminios blandos, 0,060 para aceros suaves, latón e inoxidable recocido, y 0,075 para aceros duros y titanio.",p:"Es la referencia contra la que se compara la holgura que eliges.",q:"Trabajar cerca de este valor da el mejor borde cortado."},
+ // ---- producción y costos
+ cad:{n:"Cadencia de la prensa",s:"N",u:"golpes/min",d:"Número de golpes (ciclos) que da la prensa por minuto.",p:"Aumenta la potencia media requerida y reduce el tiempo de ciclo. Cadencias muy altas en embutición profunda pueden calentar la herramienta y degradar el lubricante.",q:"Con más golpes por minuto baja el costo de máquina y de mano de obra por pieza.",e:"t_ciclo = 60/N"},
+ eff:{n:"Eficiencia de la prensa",s:"η",u:"%",d:"Fracción de la energía del motor que llega efectivamente a la pieza; el resto se pierde en fricción, volante, transmisión o sistema hidráulico.",p:"A menor eficiencia se necesita más potencia en el motor para el mismo trabajo.",q:"Solo afecta el consumo de energía y su costo.",e:"P = W·N/(60·η)"},
+ prensa:{n:"Capacidad nominal de la prensa",s:"F_nom",u:"t",d:"Fuerza máxima que la prensa disponible puede ejercer, en toneladas-fuerza.",p:"Si la fuerza requerida supera la capacidad, el proceso no se puede hacer en esa máquina; por encima del 80 % se reduce la vida útil de la prensa.",q:"Una prensa sobrecargada no llega al fondo de la carrera: piezas incompletas o con dimensiones fuera de tolerancia."},
+ lote:{n:"Tamaño del lote",s:"N_lote",u:"piezas",d:"Número de piezas que se fabrican con el mismo herramental.",p:"No cambia la mecánica del proceso.",q:"El costo del troquel se reparte entre todas las piezas del lote: lotes grandes abaratan cada pieza.",e:"C_herr/pieza = C_troquel/N_lote"},
+ tMaq:{n:"Tarifa horaria de máquina",s:"C_máq",u:"COP/h",d:"Costo de tener la prensa operando una hora: depreciación, mantenimiento, espacio y servicios.",p:"No afecta la mecánica.",q:"Se carga a cada pieza según su tiempo de ciclo."},
+ tMO:{n:"Tarifa de mano de obra",s:"C_MO",u:"COP/h",d:"Costo por hora del operario (salario más prestaciones).",p:"No afecta la mecánica.",q:"Se carga a cada pieza según el tiempo de ciclo; es relevante en procesos lentos como el estirado o el doblado manual."},
+ pE:{n:"Precio de la energía eléctrica",s:"C_E",u:"COP/kWh",d:"Tarifa de energía industrial.",p:"No afecta la mecánica.",q:"Multiplica la energía consumida por pieza (trabajo de deformación más consumo base del motor)."},
+ herr:{n:"Costo del herramental",s:"C_troquel",u:"COP",d:"Inversión en el troquel o juego de herramientas. En embutición es el costo por etapa (una estación por cada reembutición).",p:"Herramientas más complejas o de materiales más duros cuestan más pero duran más golpes.",q:"Se amortiza en el lote: domina el costo unitario en lotes pequeños."},
+ chat:{n:"Recuperación por venta de chatarra",s:"",u:"% del precio",d:"Fracción del precio del material que se recupera al vender el retal o esqueleto de la tira.",p:"No afecta la mecánica.",q:"Reduce el costo neto de material cuando el aprovechamiento de la lámina es bajo."},
+ // ---- corte
+ forma:{n:"Forma de la pieza cortada",s:"",u:"",d:"Contorno que se troquela: disco circular, placa rectangular o arandela (contorno exterior más agujero interior cortados en el mismo golpe con un troquel compuesto).",p:"Define el perímetro de corte L, que es directamente proporcional a la fuerza.",q:"Define la geometría final y el aprovechamiento de la tira de lámina."},
+ t:{n:"Espesor de la lámina",s:"t",u:"mm",d:"Espesor nominal de la lámina de partida.",p:"Es la variable con mayor efecto: la fuerza de corte crece con t, la de doblado con t², y la de embutición con t. También cambia la holgura, el radio mínimo y la recuperación elástica.",q:"Define la rigidez, el peso y el costo de material de la pieza."},
+ D:{n:"Diámetro de la pieza",s:"D",u:"mm",d:"Diámetro del disco o diámetro exterior de la arandela.",p:"Aumenta el perímetro cortado y por tanto la fuerza y la energía.",q:"Tamaño final de la pieza."},
+ Di:{n:"Diámetro del agujero",s:"Di",u:"mm",d:"Diámetro del agujero interior de la arandela, cortado por punzonado.",p:"Suma perímetro de corte. Si es muy pequeño frente al espesor, el punzón puede pandear o romperse.",q:"Ajuste con el tornillo o eje que atravesará la pieza.",e:"d_mín ≈ 4·t·τ/σ_c,punzón"},
+ a:{n:"Largo de la placa",s:"a",u:"mm",d:"Longitud del contorno rectangular.",p:"Aumenta el perímetro y la fuerza.",q:"Dimensión de la pieza."},
+ b:{n:"Ancho de la placa",s:"b",u:"mm",d:"Ancho del contorno rectangular.",p:"Aumenta el perímetro y la fuerza.",q:"Dimensión de la pieza."},
+ cp:{n:"Holgura por lado",s:"c",u:"% de t",d:"Separación radial entre punzón y matriz, expresada como porcentaje del espesor.",p:"Si es pequeña, las grietas no se encuentran (doble bruñido), sube la fuerza y el desgaste. Si es grande, el material se dobla antes de cortarse.",q:"Controla la calidad del borde: proporción bruñida, altura de rebaba, redondeo y rugosidad.",e:"c = Ac·t (recomendada)"},
+ s:{n:"Cizalla (ángulo) en el punzón",s:"s",u:"mm",d:"Desnivel que se da a la cara del punzón (o de la matriz) para que el corte avance progresivamente, como una tijera.",p:"Reduce la fuerza máxima porque no todo el perímetro se corta al mismo tiempo, pero la energía total es casi la misma y la carrera de corte aumenta.",q:"El retal o la pieza puede salir ligeramente curvada; por eso la cizalla se pone en el lado que se desecha.",e:"F' ≈ F·(p·t)/(p·t + s)"},
+ L:{n:"Perímetro de corte",s:"L",u:"mm",d:"Longitud total de contorno que se corta en un golpe.",p:"La fuerza de corte es proporcional a L.",q:"Refleja la complejidad del contorno."},
+ Fc:{n:"Fuerza máxima de corte",s:"F",u:"kN",d:"Fuerza pico que debe hacer la prensa para separar el material.",p:"Define la prensa necesaria y el esfuerzo en punzón y matriz.",q:"Una fuerza insuficiente deja la pieza sin separar.",e:"F = 0,7·Su·t·L"},
+ Fton:{n:"Fuerza requerida en toneladas",s:"F",u:"t",d:"La misma fuerza máxima expresada en toneladas-fuerza, la unidad usual en catálogos de prensas.",p:"Se compara con la capacidad de la prensa.",q:"Si la prensa se queda corta, no se completa la pieza."},
+ W:{n:"Energía por golpe",s:"W",u:"J",d:"Trabajo mecánico que la prensa entrega a la pieza en un ciclo: área bajo la curva fuerza-carrera.",p:"En prensas mecánicas la energía la entrega el volante; si la energía es excesiva, la prensa se frena aunque la fuerza sea suficiente.",q:"Se transforma casi toda en calor y endurecimiento de la zona deformada.",e:"W = ∫F·dδ"},
+ P:{n:"Potencia media requerida",s:"P",u:"kW",d:"Potencia media del motor para entregar la energía de deformación a la cadencia dada, considerando la eficiencia.",p:"Crece con la cadencia y con la energía por golpe.",q:"No afecta la pieza, pero sí el dimensionamiento del motor y el costo energético.",e:"P = W·N/(60·η)"},
+ prensaRec:{n:"Prensa recomendada",s:"",u:"t",d:"Capacidad estándar inmediatamente superior a la fuerza requerida con un margen del 25 %.",p:"El margen protege la prensa y absorbe variaciones de espesor y resistencia del lote de lámina.",q:"Una prensa correctamente dimensionada da piezas repetibles."},
+ uso:{n:"Utilización de la prensa",s:"",u:"%",d:"Fuerza requerida dividida por la capacidad de la prensa disponible.",p:"Por debajo del 80 % es una operación segura; entre 80 y 100 % hay riesgo de sobrecarga; por encima de 100 % no es posible.",q:"Sobrecargas generan piezas incompletas y dañan la máquina."},
+ Dpz:{n:"Diámetro del punzón",s:"D_p",u:"mm",d:"Dimensión del punzón. En troquelado (se conserva el disco) el punzón es más pequeño que la pieza en 2c; en punzonado (se conserva el agujero) el punzón tiene el tamaño del agujero.",p:"Define dónde queda la holgura.",q:"La pieza toma la medida de la herramienta que forma su contorno útil.",e:"Troquelado: D_p = D − 2c"},
+ Dm:{n:"Diámetro de la matriz",s:"D_m",u:"mm",d:"Dimensión de la abertura de la matriz. En troquelado es igual al tamaño de la pieza; en punzonado es el agujero más 2c.",p:"Junto con el punzón fija la holgura.",q:"El disco troquelado sale con la medida de la matriz.",e:"Punzonado: D_m = Di + 2c"},
+ cabs:{n:"Holgura por lado (absoluta)",s:"c",u:"mm",d:"Holgura por lado en milímetros.",p:"Es la cifra que se mecaniza en el troquel.",q:"Controla el borde cortado."},
+ zR:{n:"Zona de redondeo",s:"",u:"% de t",d:"Franja superior del borde donde el material se dobló hacia abajo antes de cortarse.",p:"Crece con la holgura y con la ductilidad.",q:"Borde redondeado: bueno para manipular, malo para piezas que requieren arista viva."},
+ zB:{n:"Zona bruñida",s:"",u:"% de t",d:"Franja lisa y brillante que se forma cuando el metal se desliza contra las paredes de la herramienta antes de fracturarse.",p:"Es mayor con holguras pequeñas y materiales dúctiles.",q:"Es la zona de mejor acabado y precisión dimensional del borde."},
+ zF:{n:"Zona de fractura",s:"",u:"% de t",d:"Franja rugosa e inclinada donde las grietas se propagaron y separaron el material.",p:"Crece con la holgura y en materiales poco dúctiles.",q:"Borde áspero; si se requiere funcionalidad, se hace un repaso (shaving) o corte fino."},
+ hb:{n:"Altura de rebaba",s:"h_r",u:"mm",d:"Altura del filo que queda en el borde inferior de la pieza.",p:"Aumenta con holguras grandes y con el desgaste de la herramienta.",q:"La rebaba corta, dificulta el ensamble y obliga a desbarbar; es un criterio usual de cambio o afilado del troquel."},
+ Ra:{n:"Rugosidad media del borde",s:"Ra",u:"µm",d:"Rugosidad promedio del borde cortado, ponderada entre la zona bruñida (lisa) y la de fractura (áspera).",p:"Depende de la holgura, el filo de la herramienta y la ductilidad.",q:"Indicador de calidad superficial del canto de la pieza."},
+ ang:{n:"Ángulo de la zona de fractura",s:"θ",u:"°",d:"Inclinación del plano de fractura respecto de la vertical.",p:"Aumenta con la holgura.",q:"Un borde muy inclinado reduce la zona de apoyo o de ajuste de la pieza."},
+ aprov:{n:"Aprovechamiento de la lámina",s:"η_m",u:"%",d:"Área de la pieza dividida por el área de tira que consume, considerando los puentes entre piezas y los bordes.",p:"Depende del anidado (disposición) de las piezas en la tira.",q:"Un aprovechamiento bajo encarece la pieza porque se paga material que termina como chatarra."},
+ mNet:{n:"Masa de la pieza",s:"m",u:"g",d:"Masa final de la pieza conformada.",p:"No afecta la fuerza.",q:"Peso de la pieza."},
+ mGross:{n:"Masa bruta de lámina",s:"m_b",u:"g",d:"Masa de lámina consumida por pieza, incluyendo retal, puentes, recortes o zonas de mordaza.",p:"No afecta la fuerza.",q:"Base del costo de material."},
+ // ---- doblado
+ tipo:{n:"Tipo de doblado",s:"",u:"",d:"Doblado en V (punzón en una matriz en V), en U (canal con dos dobleces simultáneos) o por arrastre (una ala sujeta y la otra doblada por un punzón que desliza por el borde).",p:"Cambia el coeficiente de fuerza K_bf: 1,33 en V, 2,67 en U y 0,33 por arrastre.",q:"Define la forma de la pieza y la precisión del ángulo."},
+ w:{n:"Longitud del doblez (ancho de la lámina)",s:"w",u:"mm",d:"Longitud de la línea de doblez.",p:"La fuerza de doblado es proporcional a w.",q:"Piezas largas pueden salir con el ángulo variable a lo largo por la flexión de la prensa plegadora."},
+ R:{n:"Radio del punzón (radio interior)",s:"R",u:"mm",d:"Radio de la punta del punzón que fija el radio interior del doblez.",p:"Radios pequeños concentran la deformación; radios grandes aumentan la recuperación elástica.",q:"Si R es menor que el radio mínimo del material, la cara exterior se agrieta.",e:"e_ext = 1/(2R/t + 1)"},
+ alpha:{n:"Ángulo de doblado",s:"α",u:"°",d:"Ángulo que gira el ala respecto de la lámina plana (90° da una L).",p:"Aumenta la carrera y la longitud de desarrollo del doblez.",q:"Ángulo de la pieza terminada antes de la recuperación elástica."},
+ Dv:{n:"Abertura de la matriz",s:"D",u:"mm",d:"Distancia entre los apoyos de la matriz en V (en U, el ancho interior del canal; por arrastre, la distancia entre el borde de la matriz y el punzón). La regla práctica en V es D ≈ 8·t.",p:"Aberturas pequeñas elevan mucho la fuerza; aberturas grandes la reducen pero agrandan el radio real y restan precisión. En doblado al aire el radio interior resultante es ≈ 0,16·D.",q:"Afecta el radio real, las marcas en la superficie y el ala mínima.",e:"F ∝ 1/D"},
+ L1:{n:"Longitud recta del ala 1",s:"L1",u:"mm",d:"Longitud recta del ala izquierda, sin contar la zona curva.",p:"Alas muy cortas (menores que ≈ 0,6·D) se hunden en la matriz y no se doblan correctamente.",q:"Dimensión de la pieza."},
+ L2:{n:"Longitud recta del ala 2",s:"L2",u:"mm",d:"Longitud recta del ala derecha, sin contar la zona curva.",p:"Igual que el ala 1.",q:"Dimensión de la pieza."},
+ acu:{n:"Doblado a fondo (acuñado)",s:"",u:"",d:"El punzón comprime la lámina contra el fondo de la matriz al final de la carrera, en lugar de doblar al aire.",p:"Multiplica la fuerza final por 3 a 5 veces, pero plastifica la zona elástica y casi elimina la recuperación elástica.",q:"Ángulos más precisos y repetibles; el radio interior es el del punzón."},
+ Fb:{n:"Fuerza de doblado",s:"F",u:"kN",d:"Fuerza máxima de doblado (incluye acuñado si está activo).",p:"Define la prensa plegadora necesaria.",q:"Fuerza insuficiente da ángulos abiertos.",e:"F = K_bf·Su·w·t²/D"},
+ Reff:{n:"Radio interior efectivo",s:"R_i",u:"mm",d:"Radio real que toma el doblez. Al aire, la lámina no copia un punzón muy fino: el radio queda cerca de 0,16·D. Con acuñado se copia el radio del punzón.",p:"Es el radio que se usa para calcular deformación, recuperación y desarrollo.",q:"Radio interior medido en la pieza."},
+ Rmin:{n:"Radio mínimo de doblado",s:"R_mín",u:"mm",d:"Menor radio interior que el material soporta sin agrietarse, estimado con la reducción de área.",p:"Si el radio usado es menor, la fibra exterior supera la ductilidad del material.",q:"Por debajo de este radio aparecen grietas en la cara exterior del doblez.",e:"R_mín = t·(50/RA − 1)"},
+ eext:{n:"Deformación de la fibra exterior",s:"e",u:"%",d:"Deformación ingenieril máxima en la cara exterior del doblez.",p:"Crece al reducir R/t.",q:"Si se acerca a la ductilidad del material aparecen grietas o piel de naranja.",e:"e = 1/(2R/t + 1)"},
+ Ks:{n:"Factor de recuperación elástica",s:"Ks",u:"",d:"Relación entre el ángulo después y antes de retirar la carga. Ks = 1 significa que no hay recuperación.",p:"Disminuye (más recuperación) con alta Y/E y con R/t grande.",q:"Determina el ángulo final de la pieza.",e:"Ks = (2Ri/t + 1)/(2Rf/t + 1)"},
+ alphaF:{n:"Ángulo final tras la descarga",s:"α_f",u:"°",d:"Ángulo que queda en la pieza al retirar el punzón.",p:"Consecuencia de la recuperación elástica.",q:"Es el ángulo que verá el inspector de calidad.",e:"α_f = Ks·α"},
+ alphaC:{n:"Ángulo a programar (sobredoblado)",s:"α_c",u:"°",d:"Ángulo que habría que doblar para que, después de la recuperación, la pieza quede con el ángulo deseado.",p:"Es la corrección que se programa en la plegadora.",q:"Permite obtener el ángulo correcto.",e:"α_c = α/Ks"},
+ Rf:{n:"Radio tras la descarga",s:"R_f",u:"mm",d:"Radio interior que queda después de la recuperación elástica.",p:"Siempre es mayor que el radio bajo carga.",q:"Radio medido en la pieza."},
+ BA:{n:"Desarrollo del doblez",s:"BA",u:"mm",d:"Longitud de la fibra neutra en la zona curva; se suma a las alas para calcular la longitud del recorte plano.",p:"La fibra neutra se desplaza hacia el interior cuando R es pequeño (K_ba = 0,33 si R < 2t; 0,5 en otro caso).",q:"Un desarrollo mal calculado da alas fuera de medida.",e:"BA = 2π(α/360)(R + K_ba·t)"},
+ Lb:{n:"Longitud del recorte plano",s:"L_b",u:"mm",d:"Longitud de la lámina plana antes de doblar.",p:"Se corta previamente por cizalla o láser.",q:"Determina las medidas finales de las alas.",e:"L_b = L1 + L2 + BA"},
+ hmax:{n:"Carrera de doblado",s:"h",u:"mm",d:"Recorrido del punzón desde el contacto con la lámina hasta el final del doblez.",p:"Carreras largas bajan la cadencia y aumentan la energía.",q:"No afecta la pieza directamente."},
+ // ---- embutición
+ Dp:{n:"Diámetro del vaso (punzón)",s:"d",u:"mm",d:"Diámetro del vaso final, igual al diámetro del punzón de la última etapa.",p:"Frente al disco define la relación de embutición: vasos estrechos y profundos requieren varias etapas.",q:"Diámetro de la pieza terminada."},
+ h:{n:"Altura del vaso",s:"h",u:"mm",d:"Profundidad final del vaso.",p:"Mayor altura exige un disco más grande y aumenta la relación de embutición.",q:"Capacidad (volumen) de la pieza.",e:"D₀ = √(d² + 4dh)"},
+ rp:{n:"Radio del punzón",s:"r_p",u:"mm",d:"Radio del borde del punzón que forma la unión entre fondo y pared.",p:"Radios pequeños concentran el adelgazamiento y favorecen el desgarre; se recomienda 4 a 10 veces t.",q:"Radio interior entre fondo y pared del vaso."},
+ Rd:{n:"Radio de la matriz",s:"R_d",u:"mm",d:"Radio de entrada de la matriz sobre el que se dobla y desdobla el material al pasar de la brida a la pared.",p:"Radios pequeños aumentan la fuerza y reducen la relación límite; radios grandes dejan una zona libre que puede arrugarse. Se recomienda 5 a 10 veces t.",q:"Influye en el adelgazamiento de la pared superior."},
+ mu:{n:"Lubricación",s:"μ",u:"",d:"Coeficiente de fricción entre lámina, matriz y pisador según el lubricante.",p:"Más fricción aumenta la fuerza y reduce la relación límite de embutición; también eleva la temperatura de la herramienta.",q:"Sin lubricación aparecen rayas y gripado en la pared; con buena lubricación el acabado es brillante."},
+ bh:{n:"Fuerza del pisador",s:"F_h",u:"% de la recomendada",d:"Presión con que el pisador sujeta la brida, expresada respecto del valor recomendado por la fórmula empírica.",p:"Muy baja: la brida se arruga por la compresión circunferencial. Muy alta: se frena el flujo de material y el fondo se desgarra.",q:"Es la variable más sensible para la calidad del vaso."},
+ cl:{n:"Holgura punzón-matriz",s:"c/t",u:"× t",d:"Separación entre punzón y matriz dividida por el espesor. Lo usual es 1,1·t.",p:"Si es menor que el espesor que llega (la brida se engruesa), el material se plancha: aumenta la fuerza.",q:"El planchado (ironing) da paredes de espesor uniforme, como en las latas de bebida."},
+ trim:{n:"Margen de recorte",s:"",u:"%",d:"Aumento del diámetro del disco para compensar las orejas y poder recortar el borde.",p:"Aumenta ligeramente la fuerza y el material consumido.",q:"Permite un borde parejo tras el recorte."},
+ una:{n:"Forzar una sola etapa",s:"",u:"",d:"Obliga a hacer el vaso en un solo golpe, aunque la relación de embutición lo desaconseje.",p:"Úsalo para ver qué pasa cuando se ignora el límite: aparece el desgarre.",q:"Pieza rota si DR > LDR."},
+ D0:{n:"Diámetro del disco",s:"D₀",u:"mm",d:"Diámetro del disco inicial calculado por conservación de área (espesor constante), más el margen de recorte.",p:"Define la relación de embutición y la fuerza del pisador.",q:"Determina el consumo de lámina.",e:"D₀ = √(d² + 4dh)"},
+ DR:{n:"Relación de embutición",s:"DR",u:"",d:"Diámetro del disco dividido por el diámetro del punzón de la primera etapa.",p:"Si supera la relación límite (LDR), la pared no soporta la fuerza necesaria para arrastrar la brida y se rompe.",q:"Indica qué tan severa es la operación.",e:"DR = D₀/d"},
+ LDR:{n:"Relación límite de embutición",s:"LDR",u:"",d:"Mayor relación D₀/d que puede embutirse en una etapa. Aumenta con r̄ y con buena lubricación y disminuye con radios de matriz pequeños.",p:"Si DR > LDR, el proceso requiere reembuticiones.",q:"Materiales con r̄ alto permiten vasos más profundos en un solo golpe."},
+ red:{n:"Reducción",s:"r",u:"%",d:"Reducción de diámetro en la primera etapa.",p:"Por encima del 50 % el riesgo de desgarre es alto.",q:"Refleja la severidad.",e:"r = (D₀ − d)/D₀"},
+ tD:{n:"Relación espesor/diámetro",s:"t/D₀",u:"%",d:"Espesor dividido por el diámetro del disco.",p:"Por debajo del 1 % la brida es muy esbelta y se arruga con facilidad: el pisador se vuelve crítico.",q:"Discos delgados y grandes dan piezas propensas a arrugas."},
+ nEt:{n:"Número de etapas",s:"n",u:"",d:"Cantidad de golpes (embutición y reembuticiones) necesarios para llegar al diámetro final.",p:"Cada reembutición admite relaciones menores (≈1,3; 1,25; 1,2...) porque el material ya está endurecido.",q:"Más etapas implican más herramentales, más tiempo y, a veces, recocidos intermedios."},
+ Fd:{n:"Fuerza de embutición (1.ª etapa)",s:"F",u:"kN",d:"Fuerza del punzón para arrastrar la brida hacia la matriz.",p:"Debe ser menor que la resistencia de la pared del vaso; en caso contrario se desgarra.",q:"",e:"F = π·d·t·Su·(D₀/d − 0,7)"},
+ Fh:{n:"Fuerza del pisador",s:"F_h",u:"kN",d:"Fuerza con que el pisador sujeta la brida.",p:"Se suma a la fuerza de la prensa (en prensas de simple efecto con cojín).",q:"Controla las arrugas.",e:"F_h = 0,015·Y·π·[D₀² − (d + 2,2t + 2R_d)²]"},
+ Fi:{n:"Fuerza de planchado",s:"F_pl",u:"kN",d:"Fuerza adicional cuando la holgura es menor que el espesor de la pared.",p:"Aumenta la fuerza total.",q:"Pared de espesor uniforme y mejor acabado."},
+ Ftot:{n:"Fuerza total de la prensa",s:"F_T",u:"kN",d:"Suma de fuerza de embutición, pisador y planchado en la etapa más exigente.",p:"Define la prensa.",q:""},
+ Fmaxst:{n:"Fuerza máxima entre etapas",s:"",u:"kN",d:"Mayor fuerza de punzón entre todas las etapas (incluye reembuticiones).",p:"Útil si todas las etapas se hacen en la misma prensa (prensa de transferencia).",q:""},
+ ear:{n:"Altura de orejas",s:"h_o",u:"mm",d:"Altura aproximada de las ondulaciones del borde causadas por la anisotropía planar.",p:"Obliga a dejar margen de recorte.",q:"Borde irregular que se recorta."},
+ tmin:{n:"Espesor mínimo (radio del punzón)",s:"t_mín",u:"mm",d:"Espesor estimado en la zona más adelgazada, en el radio del punzón.",p:"Si el adelgazamiento supera ≈ 25 % el riesgo de rotura es alto.",q:"Es el punto débil de la pieza en servicio (presión interna en un cilindro, por ejemplo)."},
+ tedge:{n:"Espesor en el borde",s:"t_b",u:"mm",d:"Espesor estimado en el borde superior del vaso; la brida se engruesa al comprimirse circunferencialmente.",p:"Si supera la holgura, se produce planchado.",q:"El borde queda más grueso que el fondo."},
+ RaE:{n:"Rugosidad de la pared",s:"Ra",u:"µm",d:"Rugosidad estimada de la pared exterior del vaso según la lubricación.",p:"Depende del lubricante, del acabado de la matriz y de la velocidad.",q:"Acabado visual de la pieza."},
+ // ---- estirado
+ wp:{n:"Ancho del panel",s:"w",u:"mm",d:"Ancho de la lámina sujeta en las mordazas, perpendicular a la dirección de estirado.",p:"La fuerza de estirado es proporcional al ancho. Paneles anchos trabajan en deformación plana.",q:"Ancho útil del panel."},
+ L0:{n:"Longitud inicial entre mordazas",s:"L₀",u:"mm",d:"Longitud libre de la lámina entre las mordazas antes de estirar.",p:"Junto con el alargamiento define el recorrido del bloque y la energía.",q:"Longitud del panel."},
+ e:{n:"Alargamiento aplicado",s:"e",u:"%",d:"Alargamiento ingenieril promedio que se impone a la lámina. En estirado se usan típicamente 2 a 10 %.",p:"Debe superar la deformación de fluencia en toda la pieza (para reducir la recuperación elástica) pero quedar por debajo del límite de estricción.",q:"Mayor alargamiento: forma más profunda, pero más adelgazamiento.",e:"ε = ln(1 + e)"},
+ modo:{n:"Estado de deformación",s:"",u:"",d:"Uniaxial: lámina angosta que puede contraerse en el ancho. Deformación plana: panel ancho donde el ancho no cambia.",p:"La deformación plana eleva el esfuerzo en un 15 % y es el estado más severo del diagrama límite.",q:"En deformación plana todo el adelgazamiento va al espesor."},
+ eps:{n:"Deformación verdadera",s:"ε",u:"",d:"Deformación logarítmica equivalente al alargamiento aplicado.",p:"Se compara con n (estricción) y con la curva límite.",q:"",e:"ε = ln(1 + e)"},
+ sf:{n:"Esfuerzo de flujo final",s:"σ_f",u:"MPa",d:"Esfuerzo necesario para seguir deformando al final del estirado.",p:"Crece con la deformación según la curva de flujo.",q:"Refleja el endurecimiento del panel.",e:"σf = K·εⁿ"},
+ Fs:{n:"Fuerza de estirado",s:"F",u:"kN",d:"Fuerza máxima de las mordazas durante el estirado.",p:"Define el equipo (prensa de estirado o cilindros hidráulicos).",q:"",e:"F = σ₁·w·t"},
+ tf:{n:"Espesor final",s:"t_f",u:"mm",d:"Espesor tras el estirado.",p:"",q:"Menor espesor: menor rigidez y resistencia local del panel."},
+ margen:{n:"Margen frente a la curva límite",s:"",u:"%",d:"Qué tan lejos está la deformación mayor de la curva límite de conformado para ese estado de deformación.",p:"Se recomienda un margen de seguridad de al menos 10 %.",q:"Margen negativo significa estricción o rotura."},
+ sb:{n:"Recuperación elástica",s:"",u:"% de ε",d:"Fracción de la deformación que se recupera al soltar las mordazas.",p:"Es muy pequeña en estirado porque toda la sección está plastificada.",q:"Por eso el estirado da paneles con muy buena fidelidad de forma."},
+ // ---- costos (salidas)
+ tciclo:{n:"Tiempo de ciclo por pieza",s:"t_c",u:"s",d:"Tiempo de máquina por pieza; en embutición se multiplica por el número de etapas.",p:"Depende de la cadencia.",q:"Base de los costos de máquina y mano de obra."},
+ cMat:{n:"Costo de material",s:"C_mat",u:"COP",d:"Masa bruta por precio del material, menos la recuperación por chatarra.",p:"",q:"Suele ser el mayor componente en piezas grandes o de materiales caros."},
+ cMaq:{n:"Costo de máquina",s:"",u:"COP",d:"Tarifa horaria de la prensa por el tiempo de ciclo.",p:"",q:""},
+ cMO:{n:"Costo de mano de obra",s:"",u:"COP",d:"Tarifa del operario por el tiempo de ciclo.",p:"",q:""},
+ cE:{n:"Costo de energía",s:"",u:"COP",d:"Energía de deformación dividida por la eficiencia, más el consumo base del motor de la prensa, por el precio del kWh.",p:"",q:"Suele ser una fracción pequeña del costo total."},
+ cH:{n:"Amortización del herramental",s:"",u:"COP",d:"Costo del troquel (por el número de etapas en embutición) dividido por el tamaño del lote.",p:"",q:"Domina en lotes pequeños."},
+ costoTotal:{n:"Costo unitario de la pieza",s:"C_u",u:"COP/pieza",d:"Suma de material, máquina, mano de obra, energía y herramental por pieza.",p:"La barra muestra qué componente domina: úsala para decidir qué optimizar (anidado, cadencia, lote, material).",q:"Precio base de fabricación, sin margen comercial ni operaciones secundarias.",e:"C_u = C_mat + (C_máq + C_MO)·t_c + C_E + C_troquel/N_lote"},
+ carrera:{n:"Posición del ariete (carrera)",s:"x",u:"%",d:"Posición del punzón durante el ciclo. De 0 a 100 % es la carga (el punzón avanza y deforma); de 100 a 120 % es la descarga (el punzón se retira y la pieza sale).",p:"El marcador vertical de las curvas sigue esta posición: puedes ver en qué momento se alcanza la fuerza máxima.",q:"En la descarga se observa la recuperación elástica (doblado) o la expulsión de la pieza."},
+ // ---- gráficas
+ g_fuerza:{n:"Curva fuerza-carrera",s:"F(δ)",u:"kN vs mm",d:"Fuerza del punzón a lo largo de su recorrido.",p:"El pico es la fuerza que debe dar la prensa; el área bajo la curva es la energía por golpe.",q:"Su forma revela el mecanismo: en corte cae bruscamente al fracturarse; en embutición sube y baja a medida que la brida desaparece; en doblado al fondo aparece un pico final de acuñado."},
+ g_borde:{n:"Perfil del borde cortado",s:"",u:"% de t",d:"Esquema del canto de la pieza con sus zonas: redondeo, bruñido, fractura y rebaba.",p:"Las proporciones dependen de la holgura y la ductilidad.",q:"Es lo que se ve con una lupa sobre el borde de la pieza."},
+ g_flujo:{n:"Curva de flujo del material",s:"σ = K·εⁿ",u:"MPa vs ε",d:"Esfuerzo verdadero necesario para deformar plásticamente el material en función de la deformación verdadera. El punto marca el estado de la zona más deformada.",p:"Una curva alta implica fuerzas altas; una pendiente sostenida (n alto) retrasa la estricción.",q:"El esfuerzo alcanzado indica cuánto se endureció la pieza."},
+ g_espesor:{n:"Esfuerzo a través del espesor",s:"σ(y)",u:"MPa vs y/t",d:"Distribución del esfuerzo de flexión desde la cara interior (compresión) hasta la exterior (tracción). La línea continua es bajo carga; la discontinua, el esfuerzo residual tras la descarga.",p:"El núcleo cercano a la fibra neutra permanece elástico: es el responsable de la recuperación elástica.",q:"Los esfuerzos residuales quedan atrapados en la pieza e influyen en la fatiga y la corrosión bajo tensión."},
+ g_brida:{n:"Esfuerzos en la brida",s:"σr, σθ",u:"MPa vs r",d:"Esfuerzo radial (tracción) y circunferencial (compresión) en la brida, desde el radio de la matriz hasta el borde del disco, en la posición actual.",p:"La compresión circunferencial causa arrugas si no hay pisador suficiente; la tracción radial máxima en la entrada de la matriz la debe soportar la pared.",q:"Explica el engrosamiento del borde y las arrugas."},
+ g_fld:{n:"Diagrama límite de conformado (FLD)",s:"ε₁ vs ε₂",u:"",d:"Curva que separa las deformaciones seguras de las que producen estricción. Los puntos muestran el estado actual de las zonas críticas de la pieza.",p:"Si un punto supera la curva hay estricción localizada o rotura.",q:"Permite anticipar dónde se romperá la pieza.",e:"FLD₀ ≈ (23,3 + 14,13·t)·n/0,21 %"}
+};
+</script>
+<script>
+"use strict";
+/* ================= UTILIDADES ================= */
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const PI=Math.PI;
+const toTon=N=>N/9806.65;
+const PRESSES=[5,10,16,20,25,32,40,50,63,80,100,125,160,200,250,315,400,500,630,800,1000,1250,1600,2000,2500,3150];
+function recPress(tonF){const need=tonF*1.25;for(const p of PRESSES) if(p>=need) return p;return Math.ceil(need/100)*100;}
+function flow(m,eps){return Math.max(m.Y, m.K*Math.pow(Math.max(eps,1e-6),m.n));}
+function trapz(xs,ys){let s=0;for(let i=1;i<xs.length;i++) s+=(xs[i]-xs[i-1])*(ys[i]+ys[i-1])/2;return s;}
+function fld0(m,t){let f=(23.3+14.13*Math.min(t,3))*Math.min(m.n/0.21,1.6)/100; if(m.fam==="al") f*=0.75; if(m.fam==="ti") f*=0.8; return f;}
+function flc(m,t,e2){const f0=fld0(m,t);return e2<0? f0-e2 : f0+0.6*e2;}
+
+/* ================= DEFINICIÓN DE PROCESOS ================= */
+const COMMON_PROD=[
+ {k:"cad",type:"num",min:0.5,max:1200,step:1},
+ {k:"eff",type:"num",min:20,max:95,step:1},
+ {k:"prensa",type:"num",min:1,max:5000,step:1},
+ {k:"lote",type:"num",min:1,max:1e8,step:100}
+];
+const COMMON_COST=[
+ {k:"tMaq",type:"num",min:0,max:1e7,step:1000},
+ {k:"tMO",type:"num",min:0,max:1e7,step:1000},
+ {k:"pE",type:"num",min:0,max:10000,step:10},
+ {k:"herr",type:"num",min:0,max:1e10,step:100000},
+ {k:"chat",type:"num",min:0,max:100,step:1}
+];
+const COST_DEF={tMaq:95000,tMO:22000,pE:850,chat:15};
+
+const PROCS={
+ corte:{name:"Corte por cizalladura",short:"Cizallado",sub:"Troquelado y punzonado entre punzón y matriz",
+  icon:'<svg viewBox="0 0 46 36"><rect x="4" y="22" width="15" height="8" fill="currentColor" opacity=".55"/><rect x="27" y="22" width="15" height="8" fill="currentColor" opacity=".55"/><rect x="19.5" y="4" width="7" height="14" fill="currentColor"/><rect x="2" y="18" width="42" height="3" fill="#E3A70B"/></svg>',
+  inputs:[
+   {k:"forma",type:"sel",opts:[["circular","Disco circular"],["rect","Placa rectangular"],["arandela","Arandela (troquel compuesto)"]]},
+   {k:"t",type:"num",min:0.1,max:12,step:0.05},
+   {k:"D",type:"num",min:1,max:1000,step:0.5,show:v=>v.forma!=="rect"},
+   {k:"Di",type:"num",min:0.5,max:900,step:0.5,show:v=>v.forma==="arandela"},
+   {k:"a",type:"num",min:1,max:2000,step:0.5,show:v=>v.forma==="rect"},
+   {k:"b",type:"num",min:1,max:2000,step:0.5,show:v=>v.forma==="rect"},
+   {k:"cp",type:"num",min:0.5,max:25,step:0.5},
+   {k:"s",type:"num",min:0,max:20,step:0.1}
+  ],
+  base:{forma:"circular",t:2,D:40,Di:10,a:40,b:20,cp:6,s:0,cad:60,eff:70,prensa:25,lote:20000,herr:6000000,...COST_DEF},
+  examples:[
+   {n:"Arandela plana M10",mat:"a1008",v:{forma:"arandela",t:2,D:20,Di:10.5,cp:6,s:0,cad:120,prensa:16,lote:100000,herr:6500000},d:"Arandela DIN 125 para tornillo M10. Un troquel compuesto corta el contorno exterior y el agujero en el mismo golpe."},
+   {n:"Disco para tapa de lata",mat:"al5052",v:{forma:"circular",t:0.25,D:70,cp:4.5,s:0,cad:300,prensa:10,lote:1000000,herr:9000000},d:"Disco de aluminio delgado que luego se embute y rebordea para formar la tapa de una lata de bebida. Alta cadencia y lote muy grande."},
+   {n:"Platina de conexión eléctrica",mat:"ms70",v:{forma:"rect",t:1.5,a:40,b:12,cp:6,s:0,cad:80,prensa:10,lote:20000,herr:4500000},d:"Terminal de latón para barras de conexión en tableros eléctricos. El latón conduce bien la electricidad y se corta con buen borde."},
+   {n:"Disco grueso de acero HSLA",mat:"hsla",v:{forma:"circular",t:6,D:150,cp:7.5,s:0,cad:15,prensa:250,lote:5000,herr:15000000},d:"Brida de refuerzo para estructura de remolque. Espesor alto y material resistente: fuerza de corte muy grande. Prueba a añadir cizalla al punzón."}
+  ],
+  charts:[["Curva fuerza-carrera","g_fuerza"],["Perfil del borde cortado","g_borde"],["Curva de flujo del material","g_flujo"]]
+ },
+ doblado:{name:"Doblado de lámina",short:"Doblado",sub:"Doblado en V, en U o por arrastre en prensa plegadora",
+  icon:'<svg viewBox="0 0 46 36"><path d="M4 12 L23 29 L42 12" stroke="currentColor" stroke-width="3.5" fill="none"/><path d="M17 3 L23 22 L29 3 Z" fill="#E3A70B"/><path d="M8 34 L23 20 L38 34" stroke="currentColor" opacity=".45" stroke-width="3" fill="none"/></svg>',
+  inputs:[
+   {k:"tipo",type:"sel",opts:[["V","Doblado en V"],["U","Doblado en U"],["W","Doblado por arrastre (de borde)"]]},
+   {k:"t",type:"num",min:0.2,max:15,step:0.1},
+   {k:"w",type:"num",min:5,max:4000,step:1},
+   {k:"R",type:"num",min:0,max:100,step:0.1},
+   {k:"alpha",type:"num",min:5,max:150,step:1,show:v=>v.tipo!=="U"},
+   {k:"Dv",type:"num",min:2,max:300,step:0.5},
+   {k:"L1",type:"num",min:2,max:1000,step:1},
+   {k:"L2",type:"num",min:2,max:1000,step:1},
+   {k:"acu",type:"chk",show:v=>v.tipo!=="W"}
+  ],
+  base:{tipo:"V",t:2,w:40,R:3,alpha:90,Dv:16,L1:60,L2:80,acu:false,cad:8,eff:75,prensa:40,lote:5000,herr:3000000,...COST_DEF},
+  examples:[
+   {n:"Soporte en L para repisa",mat:"galv",v:{tipo:"V",t:2,w:40,R:3,alpha:90,Dv:16,L1:60,L2:80,acu:false,cad:8,prensa:40,lote:5000,herr:2500000},d:"Escuadra galvanizada que sostiene una repisa. Un solo doblez a 90° en prensa plegadora con matriz en V estándar."},
+   {n:"Canal en U de aluminio",mat:"al5052",v:{tipo:"U",t:1.5,w:200,R:2,alpha:90,Dv:30,L1:25,L2:25,acu:false,cad:6,prensa:40,lote:3000,herr:4000000},d:"Perfil de marco para ventana o riel de cortina. Los dos dobleces se hacen en un golpe con una matriz en U."},
+   {n:"Escuadra de acero inoxidable",mat:"ss304",v:{tipo:"V",t:1.2,w:30,R:1.2,alpha:90,Dv:10,L1:35,L2:35,acu:true,cad:10,prensa:25,lote:10000,herr:2000000},d:"Escuadra para mobiliario de cocina industrial. El acuñado reduce la recuperación elástica del inoxidable."},
+   {n:"Pestaña de titanio aeronáutico",mat:"ti2",v:{tipo:"V",t:1,w:60,R:0.5,alpha:90,Dv:8,L1:20,L2:25,acu:false,cad:4,prensa:25,lote:500,herr:3500000},d:"Soporte de fijación en una estructura de avión. El titanio tiene alta relación Y/E: recupera mucho ángulo y exige radios generosos."},
+   {n:"Tapa de borde (arrastre)",mat:"a1008",v:{tipo:"W",t:1,w:120,R:2,alpha:90,Dv:6,L1:50,L2:15,acu:false,cad:20,prensa:16,lote:20000,herr:3000000},d:"Pestaña del borde de una tapa de gabinete eléctrico: la lámina se sujeta con un pisador y el punzón dobla el borde deslizando."}
+  ],
+  charts:[["Curva fuerza-carrera","g_fuerza"],["Esfuerzo a través del espesor","g_espesor"],["Curva de flujo del material","g_flujo"]]
+ },
+ embuticion:{name:"Embutición profunda",short:"Embutición",sub:"Transformación de un disco en un vaso con punzón, matriz y pisador",
+  icon:'<svg viewBox="0 0 46 36"><path d="M3 10 H13 V28 H33 V10 H43" stroke="currentColor" stroke-width="3.5" fill="none"/><rect x="15" y="2" width="16" height="22" fill="#E3A70B"/></svg>',
+  inputs:[
+   {k:"t",type:"num",min:0.1,max:10,step:0.05},
+   {k:"Dp",type:"num",min:3,max:1500,step:0.5},
+   {k:"h",type:"num",min:1,max:2000,step:0.5},
+   {k:"rp",type:"num",min:0.2,max:100,step:0.1},
+   {k:"Rd",type:"num",min:0.2,max:100,step:0.1},
+   {k:"mu",type:"sel",opts:[["0.2","Seco (μ ≈ 0,20)"],["0.1","Aceite mineral (μ ≈ 0,10)"],["0.05","Película polimérica o jabón (μ ≈ 0,05)"]]},
+   {k:"bh",type:"num",min:0,max:300,step:5},
+   {k:"cl",type:"num",min:0.6,max:2,step:0.05},
+   {k:"trim",type:"num",min:0,max:20,step:0.5},
+   {k:"una",type:"chk"}
+  ],
+  base:{t:1,Dp:80,h:40,rp:6,Rd:6,mu:"0.1",bh:100,cl:1.1,trim:3,una:false,cad:20,eff:65,prensa:100,lote:20000,herr:25000000,...COST_DEF},
+  examples:[
+   {n:"Vaso de lata de bebida (1.ª embutición)",mat:"al3003",v:{t:0.3,Dp:88,h:34,rp:3,Rd:2,mu:"0.05",bh:100,cl:1.1,trim:3,una:false,cad:180,prensa:25,lote:2000000,herr:60000000},d:"Primera operación de una lata de aluminio: un disco de unos 145 mm se convierte en un vaso bajo que luego se reembute y se plancha para hacer la lata alta."},
+   {n:"Botella de extintor",mat:"a1008",v:{t:2.2,Dp:110,h:280,rp:12,Rd:14,mu:"0.1",bh:100,cl:1.15,trim:4,una:false,cad:8,prensa:315,lote:10000,herr:45000000},d:"Cilindro de un extintor portátil. Es tan profundo que requiere varias etapas de embutición y reembutición."},
+   {n:"Olla de acero inoxidable",mat:"ss304",v:{t:0.8,Dp:200,h:110,rp:8,Rd:6,mu:"0.1",bh:100,cl:1.15,trim:3,una:false,cad:10,prensa:160,lote:10000,herr:35000000},d:"Cuerpo de una olla de cocina. El inoxidable 304 se endurece mucho (n alto), lo que ayuda a embutir en una sola etapa."},
+   {n:"Casquillo de latón",mat:"ms70",v:{t:0.8,Dp:12,h:40,rp:1.5,Rd:3,mu:"0.1",bh:100,cl:1.1,trim:3,una:false,cad:60,prensa:16,lote:100000,herr:8000000},d:"Vaina tubular estrecha y profunda (como un casquillo o una funda de pila). Necesita muchas reembuticiones."}
+  ],
+  charts:[["Curva fuerza-carrera","g_fuerza"],["Esfuerzos en la brida","g_brida"],["Diagrama límite de conformado","g_fld"]]
+ },
+ estirado:{name:"Estirado sobre forma",short:"Estirado",sub:"Lámina tensada con mordazas sobre un bloque de forma",
+  icon:'<svg viewBox="0 0 46 36"><path d="M3 24 Q23 2 43 24" stroke="currentColor" stroke-width="3.5" fill="none"/><path d="M11 34 Q23 12 35 34 Z" fill="#E3A70B"/><rect x="0" y="20" width="6" height="9" fill="currentColor"/><rect x="40" y="20" width="6" height="9" fill="currentColor"/></svg>',
+  inputs:[
+   {k:"t",type:"num",min:0.2,max:10,step:0.05},
+   {k:"L0",type:"num",min:50,max:12000,step:10},
+   {k:"wp",type:"num",min:10,max:4000,step:10},
+   {k:"e",type:"num",min:0.2,max:60,step:0.2},
+   {k:"modo",type:"sel",opts:[["plana","Deformación plana (panel ancho)"],["uni","Uniaxial (tira angosta)"]]}
+  ],
+  base:{t:1,L0:1000,wp:600,e:5,modo:"plana",cad:2,eff:60,prensa:400,lote:2000,herr:40000000,...COST_DEF},
+  examples:[
+   {n:"Panel de puerta de automóvil",mat:"a1008",v:{t:0.8,L0:1100,wp:800,e:6,modo:"plana",cad:3,prensa:400,lote:20000,herr:60000000},d:"Panel exterior de puerta en acero de embutición DC04: gran tamaño, curvatura suave y poca deformación, pero exige un acabado sin arrugas."},
+   {n:"Piel de fuselaje de avión",mat:"al5052",v:{t:1.6,L0:3000,wp:1200,e:4,modo:"plana",cad:1,prensa:800,lote:200,herr:120000000},d:"Revestimiento curvo de un fuselaje. El estirado da paneles grandes con mínima recuperación elástica."},
+   {n:"Revestimiento de fachada en cobre",mat:"cu110",v:{t:0.7,L0:1500,wp:300,e:12,modo:"uni",cad:2,prensa:100,lote:800,herr:15000000},d:"Lámina arquitectónica curva. El cobre recocido admite alargamientos grandes gracias a su n elevado."}
+  ],
+  charts:[["Curva fuerza-alargamiento","g_fuerza"],["Curva de flujo del material","g_flujo"],["Diagrama límite de conformado","g_fld"]]
+ }
+};
+
+/* ================= COSTOS COMUNES ================= */
+function costs(m,v,mGross,mNet,Wj,nSt,herrMult){
+ const tc=60/v.cad*nSt;
+ const Pmotor=0.11*v.prensa; // kW instalados
+ const kWh=Pmotor*0.3*tc/3600 + Wj/(v.eff/100)/3.6e6;
+ const cMat=mGross/1000*m.price - (mGross-mNet)/1000*m.price*v.chat/100;
+ const cMaq=v.tMaq*tc/3600, cMO=v.tMO*tc/3600, cE=kWh*v.pE, cH=v.herr*herrMult/v.lote;
+ const tot=cMat+cMaq+cMO+cE+cH;
+ return {tc,kWh,cMat,cMaq,cMO,cE,cH,tot,lotTot:tot*v.lote};
+}
+function pressCheck(Fn,v,W){
+ const ton=toTon(Fn), use=ton/v.prensa*100;
+ if(use>100) W.push({l:"bad",m:`La fuerza requerida (${fmt(ton,1)} t) supera la prensa disponible de ${fmt(v.prensa,0)} t. Usa al menos una prensa de ${recPress(ton)} t.`});
+ else if(use>80) W.push({l:"warn",m:`La prensa trabaja al ${fmt(use,0)} % de su capacidad: poco margen para variaciones del material.`});
+ return {ton,use,rec:recPress(ton)};
+}
+
+/* ================= MODELO: CORTE ================= */
+function mCorte(m,v){
+ const W=[], t=v.t;
+ let L,Apart,lenA,lenB;
+ if(v.forma==="rect"){L=2*(v.a+v.b);Apart=v.a*v.b;lenA=v.a;lenB=v.b;}
+ else if(v.forma==="arandela"){L=PI*(v.D+v.Di);Apart=PI*(v.D*v.D-v.Di*v.Di)/4;lenA=lenB=v.D;
+   if(v.Di>=v.D-2*t) W.push({l:"bad",m:"El agujero es demasiado grande: la corona de la arandela queda más delgada que dos espesores y se deforma."});}
+ else {L=PI*v.D;Apart=PI*v.D*v.D/4;lenA=lenB=v.D;}
+ const x=v.cp/(m.Ac*100), c=v.cp/100*t;
+ const p=clamp(0.2+0.4*m.RA/100,0.25,0.6);
+ const fac=1+0.15*Math.max(0,1-x)-0.04*Math.min(1,Math.max(0,x-1));
+ const F0=0.7*m.UTS*t*L*fac;
+ const pt=p*t, Fmax=F0*pt/(pt+v.s);
+ const g=u=>u<0.3?Math.pow(Math.sin(PI/2*u/0.3),0.7):u<=1?1-0.35*Math.pow((u-0.3)/0.7,1.5):u<=1.25?0.65-(u-1)/0.25*0.6:0.04;
+ const dEnd=Math.max(1.35*(pt+v.s),t*1.05);
+ const xs=[],ys=[];for(let i=0;i<=200;i++){const d=dEnd*i/200;xs.push(d);ys.push(Fmax*g(d/(pt+v.s))/1000);}
+ const Wj=trapz(xs,ys); // kN*mm = J
+ const P=Wj*v.cad/60/(v.eff/100)/1000;
+ // zonas del borde
+ const zR=clamp(4+3*x,3,20), zB=clamp(100*p*(1.25-0.3*x),8,75), zF=100-zR-zB;
+ const hb=t*(0.01+0.04*Math.pow(x-1,2)+(x>1.6?0.03*(x-1.6):0));
+ const RaB=0.4+0.5*x, RaF=5+3*x, Ra=(zB*RaB+zF*RaF)/(zB+zF);
+ const ang=Math.atan(c/(t*(1-zB/100-zR/100)))*180/PI;
+ // tira
+ const br=Math.max(1,1.2*t);
+ const pitch=(v.forma==="rect"?v.a:v.D)+br, Wst=(v.forma==="rect"?v.b:v.D)+2*br;
+ const Agross=pitch*Wst, aprov=Apart/Agross*100;
+ const mNet=Apart*t*m.rho*1e-6, mGross=Agross*t*m.rho*1e-6; // g
+ // herramental
+ let Dpz,Dm,DpzI=null,DmI=null;
+ if(v.forma==="rect"){Dpz=`${fmt(v.a-2*c,2)} × ${fmt(v.b-2*c,2)}`;Dm=`${fmt(v.a,2)} × ${fmt(v.b,2)}`;}
+ else {Dpz=v.D-2*c;Dm=v.D; if(v.forma==="arandela"){DpzI=v.Di;DmI=v.Di+2*c;}}
+ // verificaciones
+ if(x<0.5) W.push({l:"warn",m:`Holgura muy pequeña (${fmt(v.cp,1)} % frente a ${fmt(m.Ac*100,1)} % recomendado): doble bruñido, mayor fuerza y desgaste rápido del troquel.`});
+ else if(x>1.6) W.push({l:"warn",m:`Holgura excesiva (${fmt(v.cp,1)} % frente a ${fmt(m.Ac*100,1)} %): rebaba alta, redondeo marcado y borde inclinado.`});
+ if(v.forma==="arandela"){const dmin=4*t*0.7*m.UTS/2000; if(v.Di<dmin) W.push({l:"bad",m:`El punzón del agujero (${fmt(v.Di,1)} mm) es menor que el mínimo estimado (${fmt(dmin,1)} mm): riesgo de pandeo y rotura del punzón.`}); else if(v.Di<t) W.push({l:"warn",m:"El agujero es menor que el espesor: el punzón trabaja muy exigido; considera un material de punzón de alta resistencia."});}
+ if(v.s>0&&v.s<pt) W.push({l:"ok",m:"La cizalla en el punzón reduce la fuerza pico; con s mayor que la penetración de fractura la reducción es máxima."});
+ if(aprov<50) W.push({l:"warn",m:`Aprovechamiento de lámina bajo (${fmt(aprov,0)} %): considera anidar varias piezas en la tira o usar el retal.`});
+ const pr=pressCheck(Fmax,v,W);
+ const C=costs(m,v,mGross,mNet,Wj,1,1);
+ return {W,C,pr,Fmax,Wj,xs,ys,dEnd,p,pt,x,c,
+  out:[
+   ["Fuerzas y energía"],
+   {k:"L",v:L,u:"mm",d:1},{k:"Fc",v:Fmax/1000,u:"kN",d:1},{k:"Fton",v:pr.ton,u:"t",d:2},{k:"W",v:Wj,u:"J",d:1},{k:"P",v:P,u:"kW",d:2},
+   {k:"prensaRec",v:pr.rec,u:"t",d:0},{k:"uso",v:pr.use,u:"%",d:0,st:pr.use>100?"bad":pr.use>80?"warn":"ok"},
+   ["Herramental"],
+   {k:"cabs",v:c,u:"mm",d:3},{k:"Dpz",v:Dpz,u:"mm",d:2,lab:v.forma==="arandela"?"Punzón exterior":null},{k:"Dm",v:Dm,u:"mm",d:2,lab:v.forma==="arandela"?"Matriz exterior":null},
+   ...(v.forma==="arandela"?[{k:"Dpz",v:DpzI,u:"mm",d:2,lab:"Punzón del agujero"},{k:"Dm",v:DmI,u:"mm",d:2,lab:"Matriz del agujero"}]:[]),
+   ["Calidad del borde"],
+   {k:"zR",v:zR,u:"% t",d:0},{k:"zB",v:zB,u:"% t",d:0,st:zB<20?"warn":"ok"},{k:"zF",v:zF,u:"% t",d:0},{k:"hb",v:hb,u:"mm",d:3,st:hb>0.1*t?"warn":"ok"},{k:"Ra",v:Ra,u:"µm",d:1},{k:"ang",v:ang,u:"°",d:1},
+   ["Material"],
+   {k:"aprov",v:aprov,u:"%",d:0,st:aprov<50?"warn":"ok"},{k:"mNet",v:mNet,u:"g",d:1},{k:"mGross",v:mGross,u:"g",d:1}
+  ],
+  zones:{zR,zB,zF,hb,RaB,RaF}, strainOp:Math.log(1+m.el/100)*0.8
+ };
+}
+
+/* ================= MODELO: DOBLADO ================= */
+function mDoblado(m,v){
+ const W=[], t=v.t, Emp=m.E*1000;
+ const alpha=v.tipo==="U"?90:v.alpha;
+ const Kbf=v.tipo==="V"?1.33:v.tipo==="U"?2.67:0.33;
+ const Fbend=Kbf*m.UTS*v.w*t*t/v.Dv;
+ const acu=v.tipo!=="W"&&v.acu;
+ const Rnat=0.16*v.Dv;
+ const Reff=(v.tipo==="V"&&!acu)?Math.max(v.R,Rnat):v.R;
+ if(v.tipo==="V"&&!acu&&Rnat>v.R*1.05) W.push({l:"ok",m:`Doblado al aire: el radio interior real lo impone la abertura (≈ 0,16·D = ${fmt(Rnat,1)} mm), no el punzón de ${fmt(v.R,1)} mm.`});
+ const RminT=Math.max(0,50/m.RA-1), Rmin=RminT*t;
+ const eext=1/(2*Math.max(Reff,1e-3)/t+1);
+ // recuperación elástica
+ let z=Reff*m.Y/(Emp*t); let ratio=4*z*z*z-3*z+1; let elastic=false;
+ if(ratio<=0.02){ratio=0.02;elastic=true;}
+ let Rf=Reff/ratio;
+ let Ks=(2*Reff/t+1)/(2*Rf/t+1);
+ if(acu){Ks=1-(1-Ks)*0.15;Rf=Reff*(1+ (Rf/Reff-1)*0.15);}
+ const alphaF=alpha*Ks, alphaC=alpha/Ks;
+ const Kba=Reff<2*t?0.33:0.5;
+ const BA=2*PI*alpha/360*(Reff+Kba*t);
+ const Lb=v.L1+v.L2+(v.tipo==="U"?2*BA+ (v.Dv-2*t-2*Reff>0?v.Dv-2*t-2*Reff:0):BA);
+ // carrera
+ let hmax;
+ if(v.tipo==="V"){const th=(180-alpha)*PI/180; hmax=(v.Dv/2)/Math.tan(Math.max(th/2,0.05));hmax=Math.min(hmax,v.Dv*3);}
+ else if(v.tipo==="U") hmax=Math.min(v.L1,v.L2)+Reff+t;
+ else hmax=v.L2*Math.sin(alpha*PI/180)+Reff;
+ const Facu=acu?Fbend*(v.tipo==="U"?2.5:4):0;
+ const xs=[],ys=[];
+ for(let i=0;i<=200;i++){const x=i/200;let f;
+  if(v.tipo==="V") f=Fbend*(1-Math.exp(-x/0.06))*(1-0.25*x);
+  else if(v.tipo==="U") f=Fbend*(1-Math.exp(-x/0.08))*(0.85+0.15*x);
+  else f=Fbend*(1-Math.exp(-x/0.1))*(1-0.4*x);
+  if(acu&&x>0.9) f+= (Facu-f)*Math.pow((x-0.9)/0.1,2);
+  xs.push(x*hmax);ys.push(f/1000);}
+ const Fpk=Math.max(...ys)*1000;
+ const Wj=trapz(xs,ys);
+ const P=Wj*v.cad/60/(v.eff/100)/1000;
+ // verificaciones
+ if(Reff<Rmin) W.push({l:"bad",m:`Radio interior ${fmt(Reff,2)} mm menor que el mínimo del material (${fmt(Rmin,2)} mm): grietas en la cara exterior del doblez.`});
+ else if(Reff<0.5*t) W.push({l:"warn",m:"Radio menor que medio espesor: adelgazamiento local y marca profunda del punzón."});
+ if(elastic) W.push({l:"bad",m:"El radio es tan grande frente a Y/E que el doblez es casi totalmente elástico: la pieza vuelve casi a plano."});
+ else if(Ks<0.95) W.push({l:"warn",m:`Recuperación elástica alta: el ángulo cae de ${fmt(alpha,1)}° a ${fmt(alphaF,1)}°. Programa ${fmt(alphaC,1)}° o usa acuñado.`});
+ if(v.tipo==="V"){ if(v.Dv<6*t) W.push({l:"warn",m:`Abertura de matriz pequeña (${fmt(v.Dv/t,1)}·t): fuerza muy alta y marcas en la lámina. Lo usual es 6·t a 12·t.`});
+  else if(v.Dv>16*t) W.push({l:"warn",m:`Abertura de matriz grande (${fmt(v.Dv/t,1)}·t): radio real grande y ángulo poco preciso.`});
+  if(Math.min(v.L1,v.L2)<0.6*v.Dv) W.push({l:"bad",m:`Ala demasiado corta frente a la abertura (mínimo ≈ ${fmt(0.6*v.Dv,1)} mm): se hunde en la matriz.`});}
+ if(eext>m.el/100 && Reff>=Rmin) W.push({l:"warn",m:"La fibra exterior se deforma cerca de la ductilidad del material: posible piel de naranja o microgrietas."});
+ const pr=pressCheck(Fpk,v,W);
+ const mNet=Lb*v.w*t*m.rho*1e-6, mGross=mNet*1.05;
+ const C=costs(m,v,mGross,mNet,Wj,1,1);
+ // esfuerzos a través del espesor al final (residual)
+ return {W,C,pr,Fpk,Wj,xs,ys,hmax,alpha,Reff,Ks,alphaF,Rf,eext,acu,Fbend,
+  out:[
+   ["Fuerzas y energía"],
+   {k:"Fb",v:Fpk/1000,u:"kN",d:2},{k:"Fton",v:pr.ton,u:"t",d:2},{k:"hmax",v:hmax,u:"mm",d:1},{k:"W",v:Wj,u:"J",d:1},{k:"P",v:P,u:"kW",d:3},
+   {k:"prensaRec",v:pr.rec,u:"t",d:0},{k:"uso",v:pr.use,u:"%",d:0,st:pr.use>100?"bad":pr.use>80?"warn":"ok"},
+   ["Geometría y desarrollo"],
+   {k:"Reff",v:Reff,u:"mm",d:2},{k:"Rmin",v:Rmin,u:"mm",d:2,st:Reff<Rmin?"bad":"ok"},{k:"eext",v:eext*100,u:"%",d:1},{k:"BA",v:BA,u:"mm",d:2},{k:"Lb",v:Lb,u:"mm",d:1},
+   ["Recuperación elástica y calidad"],
+   {k:"Ks",v:Ks,u:"",d:4,st:Ks<0.95?"warn":"ok"},{k:"alphaF",v:alphaF,u:"°",d:1},{k:"alphaC",v:alphaC,u:"°",d:1},{k:"Rf",v:Rf,u:"mm",d:2},
+   ["Material"],
+   {k:"mNet",v:mNet,u:"g",d:1},{k:"mGross",v:mGross,u:"g",d:1}
+  ],
+  strainOp:Math.log(1+eext)
+ };
+}
+function bendStress(m,v,res,x){ // distribución a través del espesor
+ const t=v.t, Emp=m.E*1000, N=81;
+ const kappa=x/(res.Reff+t/2);
+ const ys=[],sl=[];
+ for(let i=0;i<N;i++){const y=-t/2+t*i/(N-1);const eps=kappa*y;let s=Emp*eps;
+  const ep=Math.abs(eps); if(Math.abs(s)>m.Y){const sp=Math.max(m.Y,m.K*Math.pow(ep,m.n)); s=Math.sign(eps)*sp;}
+  ys.push(y/t); sl.push(s);}
+ // residual al final (kappa completo)
+ const kf=1/(res.Reff+t/2), sf=[], yy=[];
+ for(let i=0;i<N;i++){const y=-t/2+t*i/(N-1);const eps=kf*y;let s=Emp*eps;if(Math.abs(s)>m.Y){s=Math.sign(eps)*Math.max(m.Y,m.K*Math.pow(Math.abs(eps),m.n));}sf.push(s);yy.push(y);}
+ const Mw=trapz(yy,sf.map((s,i)=>s*yy[i])); const I=t*t*t/12;
+ const sres=sf.map((s,i)=>s-Mw*yy[i]/I);
+ return {ys,sl,sres};
+}
+
+/* ================= MODELO: EMBUTICIÓN ================= */
+function mEmbuticion(m,v){
+ const W=[], t=v.t, d=v.Dp, mu=parseFloat(v.mu);
+ const D0=Math.sqrt(d*d+4*d*v.h)*(1+v.trim/100);
+ let LDR=1.9+0.3*Math.sqrt(m.r) - (mu-0.08)*1.5;
+ if(v.Rd<4*t) LDR-=0.1*(4-v.Rd/t)/4;
+ if(t/D0<0.01) LDR-=0.05;
+ if(v.bh>150) LDR-=0.1*(v.bh-150)/100;
+ LDR=clamp(LDR,1.6,2.6);
+ // etapas
+ let ds=[];
+ if(v.una) ds=[d];
+ else { let cur=D0/(LDR*0.93); if(D0/LDR<=d) ds=[d]; else { ds.push(cur); const rr=[1.3,1.25,1.22,1.2,1.2,1.18,1.18,1.15,1.15,1.15];
+   let i=0; while(ds[ds.length-1]/rr[Math.min(i,rr.length-1)]>d && ds.length<12){ds.push(ds[ds.length-1]/rr[Math.min(i,rr.length-1)]);i++;} ds.push(d);} }
+ const n=ds.length, d1=ds[0], DR1=D0/d1, DR=D0/d, red=(D0-d1)/D0*100;
+ const fricF=0.9+mu;
+ const Fd1=PI*d1*t*m.UTS*(DR1-0.7)*fricF;
+ const inner=d1+2.2*t+2*v.Rd;
+ const FhRec=Math.max(0,0.015*m.Y*PI*(D0*D0-inner*inner));
+ const Fh=FhRec*v.bh/100;
+ const tEdge=t*Math.min(Math.sqrt(D0/d1),1.6);
+ const sbar=flow(m,Math.log(D0/d1));
+ let Fi=0; const gap=v.cl*t;
+ if(gap<tEdge) Fi=PI*d1*gap*1.15*sbar*Math.log(tEdge/gap);
+ const Ftot=Fd1+Fh+Fi;
+ // reembuticiones
+ const Fst=[Fd1]; for(let i=1;i<n;i++){const r=ds[i-1]/ds[i];Fst.push(PI*ds[i]*t*m.UTS*1.15*(r-0.7+0.3)*fricF);}
+ const FmaxSt=Math.max(...Fst);
+ const hs=ds.map(di=>(D0*D0-di*di)/(4*di));
+ const h1=hs[0];
+ // curva etapa 1
+ const xs=[],yD=[],yH=[],yT=[];
+ for(let i=0;i<=200;i++){const x=i/200*1.08;let f;
+  if(x<=0.3) f=Math.pow(Math.sin(PI/2*x/0.3),0.8); else if(x<=1) f=1-0.85*Math.pow((x-0.3)/0.7,2); else f=0.15*Math.max(0,1-(x-1)/0.08);
+  const fh=x<1?Fh:0; const fi=(x>0.6&&x<1.05)?Fi*Math.min(1,(x-0.6)/0.2):0;
+  xs.push(x*h1);yD.push(Fd1*f/1000);yH.push(fh/1000);yT.push((Fd1*f+fh+fi)/1000);}
+ let Wj=trapz(xs,yT); for(let i=1;i<n;i++) Wj+=Fst[i]*(hs[i]-hs[i-1])*0.6/1000;
+ const P=Wj*v.cad/60/(v.eff/100)/1000;
+ const thin=clamp(8+18*(DR1/LDR-0.7)+(v.rp<4*t?6*(4-v.rp/t)/4:0),4,40);
+ const tmin=t*(1-thin/100);
+ const ear=0.12*Math.abs(m.dr)*(v.h);
+ const RaE=mu>=0.2?2.4:mu>=0.1?0.9:0.45;
+ // verificaciones
+ let tear=false, wrinkle=0;
+ if(DR1>LDR*1.001){tear=true;W.push({l:"bad",m:`Relación de embutición ${fmt(DR1,2)} mayor que la límite ${fmt(LDR,2)}: la pared se desgarra en el radio del punzón.`});}
+ else if(DR1>0.95*LDR) W.push({l:"warn",m:"La relación de embutición está muy cerca del límite: pequeñas variaciones del material pueden romper el vaso."});
+ if(v.bh<40){wrinkle=2;W.push({l:"bad",m:"Fuerza de pisador muy baja: la brida se arruga por la compresión circunferencial."});}
+ else if(v.bh<70){wrinkle=1;W.push({l:"warn",m:"Fuerza de pisador baja: riesgo de arrugas en la brida, sobre todo con discos delgados."});}
+ if(v.bh>180){tear=true;W.push({l:"bad",m:"Pisador excesivo: frena la brida y el fondo del vaso se desgarra."});}
+ else if(v.bh>140) W.push({l:"warn",m:"Pisador alto: aumenta la fricción y el adelgazamiento en el fondo."});
+ if(t/D0<0.01&&v.bh<100&&!wrinkle) W.push({l:"warn",m:`Disco muy esbelto (t/D₀ = ${fmt(t/D0*100,2)} %): el pisador debe ajustarse con cuidado.`});
+ if(n>1) W.push({l:"ok",m:`Se requieren ${n} etapas: ${ds.map(x=>fmt(x,1)).join(" → ")} mm.`});
+ if(n>=3) W.push({l:"warn",m:"Con tres o más etapas se recomienda un recocido intermedio para recuperar ductilidad."});
+ if(v.rp<4*t) W.push({l:"warn",m:`Radio de punzón pequeño (${fmt(v.rp/t,1)}·t): concentra el adelgazamiento. Lo usual es 4·t a 10·t.`});
+ if(v.Rd<4*t) W.push({l:"warn",m:`Radio de matriz pequeño (${fmt(v.Rd/t,1)}·t): aumenta la fuerza y reduce la relación límite.`});
+ if(v.Rd>15*t) W.push({l:"warn",m:"Radio de matriz muy grande: queda una zona sin pisador que tiende a arrugarse."});
+ if(Fi>0) W.push({l:"ok",m:`Holgura menor que el espesor del borde (${fmt(tEdge,2)} mm): hay planchado de la pared.`});
+ if(mu>=0.2) W.push({l:"warn",m:"Sin lubricación la fricción es alta: rayado de la pared, gripado y menor relación límite."});
+ if(thin>25) W.push({l:"warn",m:`Adelgazamiento estimado de ${fmt(thin,0)} % en el radio del punzón.`});
+ if(ear>0.03*v.h) W.push({l:"ok",m:`Anisotropía planar Δr = ${m.dr}: aparecen 4 orejas de unos ${fmt(ear,1)} mm que se deben recortar.`});
+ const pr=pressCheck(Math.max(Ftot,FmaxSt),v,W);
+ const br=Math.max(2,1.5*t);
+ const Agross=(D0+br)*(D0+2*br);
+ const Acup=PI*d*d/4+PI*d*v.h;
+ const mNet=Acup*t*m.rho*1e-6, mGross=Agross*t*m.rho*1e-6;
+ const C=costs(m,v,mGross,mNet,Wj,n,n);
+ const Rc0=D0/2;
+ return {W,C,pr,Wj,xs,yD,yH,yT,h1,D0,d1,ds,hs,n,DR1,LDR,tear,wrinkle,tEdge,thin,ear,Fh,Fd1,
+  out:[
+   ["Geometría y severidad"],
+   {k:"D0",v:D0,u:"mm",d:1},{k:"DR",v:DR1,u:"",d:2,st:DR1>LDR?"bad":DR1>0.95*LDR?"warn":"ok",lab:n>1?"Relación de embutición (1.ª etapa)":null},{k:"LDR",v:LDR,u:"",d:2},{k:"red",v:red,u:"%",d:1,st:red>50?"warn":"ok"},
+   {k:"tD",v:t/D0*100,u:"%",d:2},{k:"nEt",v:n,u:"",d:0,st:n>1?"warn":"ok"},
+   ["Fuerzas y energía"],
+   {k:"Fd",v:Fd1/1000,u:"kN",d:1},{k:"Fh",v:Fh/1000,u:"kN",d:1},{k:"Fi",v:Fi/1000,u:"kN",d:1},{k:"Ftot",v:Ftot/1000,u:"kN",d:1},{k:"Fmaxst",v:FmaxSt/1000,u:"kN",d:1},
+   {k:"Fton",v:pr.ton,u:"t",d:1},{k:"W",v:Wj,u:"J",d:0},{k:"P",v:P,u:"kW",d:2},{k:"prensaRec",v:pr.rec,u:"t",d:0},{k:"uso",v:pr.use,u:"%",d:0,st:pr.use>100?"bad":pr.use>80?"warn":"ok"},
+   ["Calidad de la pieza"],
+   {k:"tmin",v:tmin,u:"mm",d:3,st:thin>25?"warn":"ok"},{k:"tedge",v:tEdge,u:"mm",d:3},{k:"ear",v:ear,u:"mm",d:1},{k:"RaE",v:RaE,u:"µm",d:2,st:mu>=0.2?"warn":"ok"},
+   ["Material"],
+   {k:"mNet",v:mNet,u:"g",d:1},{k:"mGross",v:mGross,u:"g",d:1},{k:"aprov",v:mNet/mGross*100,u:"%",d:0}
+  ]};
+}
+function flangeStress(m,v,R,x){
+ const R0=R.D0/2, Ri=R.d1/2+v.Rd;
+ if(R0<=Ri) return null;
+ const Rc=Math.sqrt(Math.max(Ri*Ri, R0*R0-Math.min(x,1)*(R0*R0-Ri*Ri)));
+ if(Rc-Ri<0.01*R0) return {rs:[],sr:[],st:[],Rc,Ri,R0};
+ const sb=1.1*flow(m,Math.log(R0/Rc)+0.02);
+ const rs=[],sr=[],st=[];
+ for(let i=0;i<=60;i++){const r=Ri+(Rc-Ri)*i/60;const s=sb*Math.log(Rc/r);rs.push(r);sr.push(s);st.push(s-sb);}
+ return {rs,sr,st,Rc,Ri,R0};
+}
+
+/* ================= MODELO: ESTIRADO ================= */
+function mEstirado(m,v){
+ const W=[], t=v.t, eps=Math.log(1+v.e/100), plane=v.modo==="plana";
+ const curve=ee=>{ if(plane){const s1=1.155*flow(m,1.155*ee);return s1*v.wp*t*Math.exp(-ee);} const s=flow(m,ee);return s*v.wp*Math.exp(-ee/2)*t*Math.exp(-ee/2);};
+ const xs=[],ys=[],ls=[];
+ const eMaxPlot=Math.max(eps*1.6, 0.02);
+ for(let i=0;i<=200;i++){const ee=eMaxPlot*i/200;xs.push((Math.exp(ee)-1)*100);ys.push(curve(ee)/1000);ls.push(v.L0*Math.exp(ee));}
+ // energía hasta eps
+ const xe=[],ye=[];for(let i=0;i<=200;i++){const ee=eps*i/200;xe.push(v.L0*Math.exp(ee));ye.push(curve(ee)/1000);}
+ const Wj=trapz(xe,ye);
+ let Fmax=0;for(let i=0;i<=100;i++){Fmax=Math.max(Fmax,curve(eps*i/100));}
+ const sf=plane?1.155*flow(m,1.155*eps):flow(m,eps);
+ const tf=plane?t*Math.exp(-eps):t*Math.exp(-eps/2);
+ const e2=plane?0:-eps/2, lim=flc(m,t,e2);
+ const margen=(1-eps/lim)*100;
+ const sb=Math.min(100,sf/(m.E*1000)/eps*100);
+ const P=Wj*v.cad/60/(v.eff/100)/1000;
+ const eY=m.Y/(m.E*1000);
+ if(margen<0) W.push({l:"bad",m:`La deformación (${fmt(eps,3)}) supera la curva límite (${fmt(lim,3)}): estricción localizada y rotura del panel.`});
+ else if(margen<10) W.push({l:"warn",m:`Margen frente a la curva límite de solo ${fmt(margen,0)} %: se recomienda al menos 10 %.`});
+ if(!plane&&eps>m.n) W.push({l:"bad",m:`En tracción uniaxial la estricción aparece cuando ε = n = ${m.n}. La deformación aplicada (${fmt(eps,3)}) ya la supera.`});
+ if(eps<3*eY) W.push({l:"warn",m:"Alargamiento muy pequeño: parte de la lámina queda casi elástica y la recuperación elástica será notable."});
+ if(v.e<1.5) W.push({l:"warn",m:"Por debajo de ≈ 1,5 % de alargamiento el panel puede no plastificar de forma uniforme."});
+ const pr=pressCheck(Fmax,v,W);
+ const grip=2*Math.max(80,10*t);
+ const mNet=v.L0*v.wp*t*m.rho*1e-6, mGross=(v.L0+grip)*v.wp*t*m.rho*1e-6;
+ const C=costs(m,v,mGross,mNet,Wj,1,1);
+ return {W,C,pr,Wj,xs,ys,eps,sf,tf,lim,margen,e2,plane,Fmax,
+  out:[
+   ["Deformación"],
+   {k:"eps",v:eps,u:"",d:4},{k:"sf",v:sf,u:"MPa",d:0},{k:"tf",v:tf,u:"mm",d:3},{k:"margen",v:margen,u:"%",d:0,st:margen<0?"bad":margen<10?"warn":"ok"},{k:"sb",v:sb,u:"% ε",d:1},
+   ["Fuerzas y energía"],
+   {k:"Fs",v:Fmax/1000,u:"kN",d:1},{k:"Fton",v:pr.ton,u:"t",d:1},{k:"W",v:Wj,u:"J",d:0},{k:"P",v:P,u:"kW",d:3},{k:"prensaRec",v:pr.rec,u:"t",d:0},{k:"uso",v:pr.use,u:"%",d:0,st:pr.use>100?"bad":pr.use>80?"warn":"ok"},
+   ["Material"],
+   {k:"mNet",v:mNet,u:"g",d:0},{k:"mGross",v:mGross,u:"g",d:0},{k:"aprov",v:mNet/mGross*100,u:"%",d:0}
+  ]};
+}
+const MODELS={corte:mCorte,doblado:mDoblado,embuticion:mEmbuticion,estirado:mEstirado};
+
+/* ================= FORMATO ================= */
+function fmt(v,d=2){ if(typeof v!=="number") return String(v); if(!isFinite(v)) return "—";
+ return v.toLocaleString("es-CO",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function money(v){ return "$ "+fmt(v, Math.abs(v)<100?1:0); }
+</script>
+<script>
+"use strict";
+/* ================= DIBUJO: UTILIDADES ================= */
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue("--"+n).trim();
+function prep(cv){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h) return null;
+ if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+ const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return {ctx,w,h};}
+function niceTicks(a,b,n=5){if(a===b){a-=1;b+=1;}const r=b-a;let st=Math.pow(10,Math.floor(Math.log10(r/n)));const e=r/n/st;st*=e>=7.5?10:e>=3.5?5:e>=1.5?2:1;
+ const out=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+st*1e-6;v+=st) out.push(Math.abs(v)<st*1e-6?0:v);return {ticks:out,step:st};}
+function tickLabel(v,st){const d=st>=1?0:Math.min(4,Math.ceil(-Math.log10(st)));return fmt(v,d);}
+function alpha(c,a){ // hex o rgb a rgba
+ if(c.startsWith("#")){let h=c.slice(1);if(h.length===3)h=h.split("").map(x=>x+x).join("");const n=parseInt(h,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+ return c;}
+
+/* ================= GRÁFICAS ================= */
+function chart(ctx,w,h,cfg){
+ const ink=css("ink"),ink2=css("ink-2"),line=css("line");
+ const legendH=cfg.series.some(s=>s.label)?18:4;
+ const L=56,Rm=12,T=10+legendH,B=38;
+ const pw=w-L-Rm, ph=h-T-B;
+ let xs=[],ys=[];cfg.series.forEach(s=>{xs=xs.concat(s.x);ys=ys.concat(s.y);});(cfg.pts||[]).forEach(p=>{xs.push(p.x);ys.push(p.y);});
+ let [x0,x1]=cfg.xr||[Math.min(...xs),Math.max(...xs)];let [y0,y1]=cfg.yr||[Math.min(0,...ys),Math.max(...ys)*1.08];
+ if(!isFinite(x0)||!isFinite(x1)){x0=0;x1=1;} if(!isFinite(y0)||!isFinite(y1)){y0=0;y1=1;}
+ if(x1-x0<1e-9) x1=x0+1; if(y1-y0<1e-9) y1=y0+1;
+ const X=v=>L+(v-x0)/(x1-x0)*pw, Y=v=>T+ph-(v-y0)/(y1-y0)*ph;
+ ctx.font="11px "+css("font");ctx.lineWidth=1;
+ const tx=niceTicks(x0,x1,5),ty=niceTicks(y0,y1,5);
+ ctx.strokeStyle=alpha(line.startsWith("#")?line:"#999",0.9);ctx.fillStyle=ink2;
+ ctx.textAlign="center";ctx.textBaseline="top";
+ tx.ticks.forEach(v=>{const px=X(v);ctx.globalAlpha=0.55;ctx.beginPath();ctx.moveTo(px,T);ctx.lineTo(px,T+ph);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(tickLabel(v,tx.step),px,T+ph+4);});
+ ctx.textAlign="right";ctx.textBaseline="middle";
+ ty.ticks.forEach(v=>{const py=Y(v);ctx.globalAlpha=0.55;ctx.beginPath();ctx.moveTo(L,py);ctx.lineTo(L+pw,py);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(tickLabel(v,ty.step),L-5,py);});
+ ctx.strokeStyle=ink2;ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,T+ph);ctx.lineTo(L+pw,T+ph);ctx.stroke();
+ if(y0<0&&y1>0){ctx.strokeStyle=ink2;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(L,Y(0));ctx.lineTo(L+pw,Y(0));ctx.stroke();ctx.globalAlpha=1;}
+ if(x0<0&&x1>0){ctx.strokeStyle=ink2;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(X(0),T);ctx.lineTo(X(0),T+ph);ctx.stroke();ctx.globalAlpha=1;}
+ ctx.fillStyle=ink2;ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(cfg.xlab||"",L+pw/2,h-2);
+ ctx.save();ctx.translate(12,T+ph/2);ctx.rotate(-PI/2);ctx.textBaseline="middle";ctx.fillText(cfg.ylab||"",0,0);ctx.restore();
+ ctx.save();ctx.beginPath();ctx.rect(L,T-2,pw,ph+4);ctx.clip();
+ (cfg.hl||[]).forEach(hl=>{ctx.strokeStyle=hl.c;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(L,Y(hl.y));ctx.lineTo(L+pw,Y(hl.y));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=hl.c;ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText(hl.label||"",L+4,Y(hl.y)-2);});
+ (cfg.vl||[]).forEach(vl=>{ctx.strokeStyle=vl.c;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(vl.x),T);ctx.lineTo(X(vl.x),T+ph);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=vl.c;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(vl.label||"",X(vl.x)+3,T+2);});
+ cfg.series.forEach(s=>{if(!s.x.length) return;
+  if(s.fill){ctx.fillStyle=alpha(s.c,0.14);ctx.beginPath();ctx.moveTo(X(s.x[0]),Y(Math.max(y0,0)));s.x.forEach((v,i)=>ctx.lineTo(X(v),Y(s.y[i])));ctx.lineTo(X(s.x[s.x.length-1]),Y(Math.max(y0,0)));ctx.closePath();ctx.fill();}
+  ctx.strokeStyle=s.c;ctx.lineWidth=s.lw||2;ctx.setLineDash(s.dash||[]);ctx.beginPath();s.x.forEach((v,i)=>{const px=X(v),py=Y(s.y[i]);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});ctx.stroke();ctx.setLineDash([]);});
+ if(cfg.marker!=null){const mx=X(cfg.marker);ctx.strokeStyle=css("accent");ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx,T);ctx.lineTo(mx,T+ph);ctx.stroke();}
+ (cfg.pts||[]).forEach(p=>{ctx.fillStyle=p.c;ctx.strokeStyle=css("surface");ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(p.x),Y(p.y),p.r||5,0,2*PI);ctx.fill();ctx.stroke();
+  if(p.label){ctx.fillStyle=ink;ctx.textAlign=p.align||"left";ctx.textBaseline="bottom";ctx.fillText(p.label,X(p.x)+(p.align==="right"?-7:7),Y(p.y)-4);}});
+ ctx.restore();
+ if(cfg.msg){ctx.fillStyle=ink2;ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="13px "+css("font");ctx.fillText(cfg.msg,L+pw/2,T+ph/2);}
+ // leyenda
+ let lx=L;ctx.textAlign="left";ctx.textBaseline="middle";ctx.font="11px "+css("font");
+ cfg.series.filter(s=>s.label).forEach(s=>{ctx.strokeStyle=s.c;ctx.lineWidth=2.5;ctx.setLineDash(s.dash||[]);ctx.beginPath();ctx.moveTo(lx,8);ctx.lineTo(lx+16,8);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=ink;ctx.fillText(s.label,lx+20,8);lx+=ctx.measureText(s.label).width+34;});
+}
+
+function edgeProfile(ctx,w,h,Z,t){
+ const ink=css("ink"),ink2=css("ink-2");
+ const bx=w*0.12,bw=w*0.32,top=24,H=h-60;
+ const yR=top+H*Z.zR/100, yB=yR+H*Z.zB/100, yF=top+H;
+ const incl=Math.min(bw*0.35,H*0.25*(Z.zF/60));
+ const burr=Math.min(28,Math.max(3,Z.hb/t*H));
+ ctx.fillStyle=alpha(css("sheet"),0.35);ctx.strokeStyle=ink2;ctx.lineWidth=1.5;
+ ctx.beginPath();ctx.moveTo(bx,top);ctx.lineTo(bx+bw-18,top);ctx.quadraticCurveTo(bx+bw,top,bx+bw,yR);ctx.lineTo(bx+bw,yB);ctx.lineTo(bx+bw+incl,yF);ctx.lineTo(bx+bw+incl+3,yF+burr);ctx.lineTo(bx+bw+incl-4,yF);ctx.lineTo(bx,yF);ctx.closePath();ctx.fill();ctx.stroke();
+ const band=(y1,y2,c)=>{ctx.fillStyle=c;ctx.fillRect(bx+bw+incl+18,y1,16,Math.max(1,y2-y1));};
+ band(top,yR,css("c5"));band(yR,yB,css("c1"));band(yB,yF,css("c2"));band(yF,yF+burr,css("c4"));
+ ctx.strokeStyle=css("c1");ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(bx+bw,yR);ctx.lineTo(bx+bw,yB);ctx.stroke();
+ ctx.strokeStyle=css("c2");ctx.lineWidth=3;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(bx+bw,yB);ctx.lineTo(bx+bw+incl,yF);ctx.stroke();ctx.setLineDash([]);
+ ctx.font="12px "+css("font");ctx.fillStyle=ink;ctx.textAlign="left";ctx.textBaseline="middle";
+ const lx=bx+bw+incl+42;
+ const items=[[ (top+yR)/2,`Redondeo ${fmt(Z.zR,0)} %`,css("c5")],[(yR+yB)/2,`Bruñido ${fmt(Z.zB,0)} % (Ra ${fmt(Z.RaB,1)} µm)`,css("c1")],[(yB+yF)/2,`Fractura ${fmt(Z.zF,0)} % (Ra ${fmt(Z.RaF,1)} µm)`,css("c2")],[yF+burr/2+6,`Rebaba ${fmt(Z.hb,3)} mm`,css("c4")]];
+ let last=-99; items.forEach(([y,txt,c])=>{let yy=Math.max(y,last+15);last=yy;ctx.fillStyle=c;ctx.fillRect(lx,yy-4,8,8);ctx.fillStyle=ink;ctx.fillText(txt,lx+12,yy);});
+ ctx.fillStyle=ink2;ctx.textAlign="center";ctx.fillText("Pieza",bx+bw/2,top+H/2);
+ ctx.fillText("t",bx-10,top+H/2);ctx.strokeStyle=ink2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx-4,top);ctx.lineTo(bx-4,yF);ctx.stroke();
+}
+
+/* ================= DIBUJO: GEOMETRÍA ================= */
+function viewFit(bb,w,h,pad=24){const sx=(w-2*pad)/(bb[2]-bb[0]),sy=(h-2*pad)/(bb[3]-bb[1]);const s=Math.min(sx,sy);
+ const ox=pad+((w-2*pad)-(bb[2]-bb[0])*s)/2-bb[0]*s, oy=h-pad-((h-2*pad)-(bb[3]-bb[1])*s)/2+bb[1]*s;
+ return {s,X:x=>ox+x*s,Y:y=>oy-y*s};}
+function turtle(x,y,th,ops){const pts=[{x,y,seg:-1}];
+ ops.forEach((op,si)=>{ if(op[0]==="L"){const l=op[1];if(l<=0) return;x+=l*Math.cos(th);y+=l*Math.sin(th);pts.push({x,y,seg:si});}
+  else {const R=op[1],da=op[2];if(Math.abs(da)<1e-6||R<=0) return;const sg=Math.sign(da);const cx=x-sg*R*Math.sin(th),cy=y+sg*R*Math.cos(th);const f0=th-sg*PI/2;const N=Math.max(3,Math.ceil(Math.abs(da)/0.08));
+   for(let i=1;i<=N;i++){const f=f0+da*i/N;x=cx+R*Math.cos(f);y=cy+R*Math.sin(f);pts.push({x,y,seg:si});}th+=da;} });
+ return pts;}
+function thick(pts,tv){ // polígono de espesor tv alrededor de la línea media
+ const up=[],dn=[];for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];let dx=b.x-a.x,dy=b.y-a.y;const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+  up.push([pts[i].x-dy*tv/2,pts[i].y+dx*tv/2]);dn.push([pts[i].x+dy*tv/2,pts[i].y-dx*tv/2]);}
+ return up.concat(dn.reverse());}
+function poly(ctx,V,P,fill,stroke,lw=1){ctx.beginPath();P.forEach((p,i)=>{const X=V.X(p[0]),Y=V.Y(p[1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke();}}
+function rect(x0,y0,x1,y1){return [[x0,y0],[x1,y0],[x1,y1],[x0,y1]];}
+function arrow(ctx,x,y,dx,dy,c,label){ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dx,y+dy);ctx.stroke();const a=Math.atan2(dy,dx);ctx.beginPath();ctx.moveTo(x+dx,y+dy);ctx.lineTo(x+dx-9*Math.cos(a-0.4),y+dy-9*Math.sin(a-0.4));ctx.lineTo(x+dx-9*Math.cos(a+0.4),y+dy-9*Math.sin(a+0.4));ctx.closePath();ctx.fill();
+ if(label){ctx.font="600 12px "+css("font");ctx.textAlign="left";ctx.textBaseline="middle";const tw=ctx.measureText(label).width;let lx=x+(dx<0?dx-tw-12:8),ly=y+dy/2+(dy===0?16:0);
+  ctx.fillStyle=alpha(css("surface").startsWith("#")?css("surface"):"#ffffff",0.92);ctx.fillRect(lx-4,ly-9,tw+8,18);ctx.fillStyle=c;ctx.fillText(label,lx,ly);}}
+function hatch(ctx,V,P,col){ctx.save();poly(ctx,V,P,col||css("tool"),css("ink-2"),1);ctx.clip();ctx.strokeStyle=alpha("#ffffff",0.12);ctx.lineWidth=1;const xs=P.map(p=>V.X(p[0])),ys=P.map(p=>V.Y(p[1]));const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+ for(let k=x0-(y1-y0);k<x1;k+=9){ctx.beginPath();ctx.moveTo(k,y1);ctx.lineTo(k+(y1-y0),y0);ctx.stroke();}ctx.restore();}
+function phaseText(ctx,w,x,txt){ctx.font="600 13px "+css("font");ctx.fillStyle=css("ink");ctx.textAlign="left";ctx.textBaseline="top";
+ ctx.fillText(x<=1?`Carga: ${fmt(x*100,0)} % de la carrera`:`Descarga: retorno del ariete`,14,12);if(txt){ctx.font="12px "+css("font");ctx.fillStyle=css("ink-2");ctx.fillText(txt,14,30);}}
+
+/* ================= SIMULACIÓN: CORTE ================= */
+function drawCorte(ctx,w,h,R,v,m,x){
+ const u=Math.min(x,1), un=Math.max(0,(x-1)/0.2);
+ const Dm=v.forma==="rect"?v.a:v.D, c=R.c, Dp=Dm-2*c, t=v.t;
+ const half=Dm/2*1.7;
+ let s0=(w-60)/(2*half);
+ const tv=Math.max(t,14/s0);
+ const exag=tv>t*1.05;
+ const k=tv/t;
+ const dEndv=R.dEnd*k, ptv=R.pt*k;
+ const bb=[-half,-5*tv,half,6*tv+ (w/h>2.2?0:tv)];
+ const V=viewFit(bb,w,h,26);
+ const delta=(u*R.dEnd)*k; // desplazamiento del punzón (vista)
+ const frac=delta>=ptv*1.02;
+ const pos=un>0? delta*(1-un) : delta;
+ // matriz
+ hatch(ctx,V,rect(-half,-4*tv,-Dm/2,0));hatch(ctx,V,rect(Dm/2,-4*tv,half,0));
+ // pisador/extractor
+ poly(ctx,V,rect(-half,tv*1.02,-Dp/2-c*0.2-tv*0.3,tv*1.9),alpha(css("tool-2"),0.55),null);
+ poly(ctx,V,rect(Dp/2+c*0.2+tv*0.3,tv*1.02,half,tv*1.9),alpha(css("tool-2"),0.55),null);
+ // lámina exterior (esqueleto)
+ const sheet=css("sheet"), acc=css("accent");
+ const sag=frac?0:Math.min(delta,ptv);
+ const rollover=Math.min(delta,ptv)*0.25;
+ const outerL=[[-half,0],[-Dm/2,0],[-Dm/2,tv-rollover],[-Dm/2-c*0.5,tv],[-half,tv]];
+ const outerR=[[half,0],[Dm/2,0],[Dm/2,tv-rollover],[Dm/2+c*0.5,tv],[half,tv]];
+ poly(ctx,V,outerL,sheet,css("ink-2"));poly(ctx,V,outerR,sheet,css("ink-2"));
+ // pieza (disco)
+ let yOff;
+ if(!frac) yOff=-sag; else yOff=-delta;
+ if(un>0) yOff=-(R.dEnd*k)-un*3*tv; // cae por la matriz
+ const slugPts=(x0,x1)=>[[x0,yOff],[x1,yOff],[x1,yOff+tv],[x0,yOff+tv]];
+ if(v.forma==="arandela"){const Di=v.Di;poly(ctx,V,slugPts(-Dp/2,-Di/2),sheet,css("ink-2"));poly(ctx,V,slugPts(Di/2,Dp/2),sheet,css("ink-2"));
+   if(frac){poly(ctx,V,slugPts(-Di/2+c,Di/2-c).map(p=>[p[0],p[1]-tv*0.6]),alpha(sheet,0.5),css("ink-2"));}}
+ else poly(ctx,V,slugPts(-Dp/2,Dp/2),sheet,css("ink-2"));
+ // banda de cizallamiento antes de la fractura
+ if(!frac&&delta>0){const a=clamp(delta/ptv,0.1,1);
+  poly(ctx,V,[[-Dm/2,0],[-Dp/2,-sag],[-Dp/2,tv-sag],[-Dm/2,tv-rollover]],alpha(acc,0.35+0.55*a),null);
+  poly(ctx,V,[[Dm/2,0],[Dp/2,-sag],[Dp/2,tv-sag],[Dm/2,tv-rollover]],alpha(acc,0.35+0.55*a),null);
+  if(a>0.75){ctx.strokeStyle=css("bad");ctx.lineWidth=1.5;[[-1],[1]].forEach(([sg])=>{ctx.beginPath();ctx.moveTo(V.X(sg*Dm/2),V.Y(0));ctx.lineTo(V.X(sg*(Dm/2-c*0.4)),V.Y(tv*0.35*(a-0.75)*4-sag*0.3));ctx.stroke();ctx.beginPath();ctx.moveTo(V.X(sg*Dp/2),V.Y(tv-sag));ctx.lineTo(V.X(sg*(Dp/2+c*0.4)),V.Y(tv-sag-tv*0.35*(a-0.75)*4));ctx.stroke();});}}
+ if(frac&&un===0){ // bordes coloreados
+  ctx.lineWidth=3;ctx.strokeStyle=css("c1");[-1,1].forEach(sg=>{ctx.beginPath();ctx.moveTo(V.X(sg*Dm/2),V.Y(tv-rollover));ctx.lineTo(V.X(sg*Dm/2),V.Y(tv*(1-R.zones.zR/100-R.zones.zB/100)));ctx.stroke();});}
+ // punzón
+ const pY=tv-pos; const pH=4.5*tv;
+ const punchP=v.forma==="arandela"?rect(-Dp/2,pY,Dp/2,pY+pH):rect(-Dp/2,pY,Dp/2,pY+pH);
+ hatch(ctx,V,punchP,css("steel-2"));
+ if(v.forma==="arandela"){poly(ctx,V,rect(-v.Di/2,pY-(frac?tv*0.6:0),v.Di/2,pY+pH*0.95),alpha(css("tool-2"),0.95),null);}
+ if(v.s>0){ctx.fillStyle=alpha(css("accent"),0.9);ctx.font="11px "+css("font");ctx.textAlign="center";ctx.fillText(`cizalla s = ${fmt(v.s,1)} mm`,V.X(0),V.Y(pY+pH)-8);}
+ // fuerza
+ const i=Math.min(R.ys.length-1,Math.round(u*200));const Fn=un>0?0:R.ys[i];
+ arrow(ctx,V.X(0),V.Y(pY+pH)-46,0,40,css("bad"),`F = ${fmt(Fn,1)} kN`);
+ phaseText(ctx,w,x,exag?"Espesor exagerado para que se vea la zona de corte":"");
+ // vista superior
+ const r=Math.min(46,h*0.14);const cx=w-r-18,cy=r+18;
+ ctx.strokeStyle=css("steel-2");ctx.lineWidth=2;ctx.fillStyle=alpha(css("sheet"),0.4);
+ if(v.forma==="rect"){const ar=v.a/v.b;const ww=ar>1?2*r:2*r*ar,hh=ar>1?2*r/ar:2*r;ctx.fillRect(cx-ww/2,cy-hh/2,ww,hh);ctx.strokeRect(cx-ww/2,cy-hh/2,ww,hh);}
+ else{ctx.beginPath();ctx.arc(cx,cy,r,0,2*PI);ctx.fill();ctx.stroke();if(v.forma==="arandela"){ctx.fillStyle=css("surface-2");ctx.beginPath();ctx.arc(cx,cy,r*v.Di/v.D,0,2*PI);ctx.fill();ctx.stroke();}}
+ ctx.fillStyle=css("ink-2");ctx.font="11px "+css("font");ctx.textAlign="center";ctx.fillText("Vista superior",cx,cy+r+12);
+}
+
+/* ================= SIMULACIÓN: DOBLADO ================= */
+function dobGeom(R,v,x,tv){
+ const u=Math.min(x,1),un=Math.max(0,(x-1)/0.2);
+ const alpha=R.alpha*PI/180;
+ const ease=u<1?1-Math.pow(1-u,1.6):1;
+ let phi=alpha*ease; if(un>0) phi=alpha*(1-un*(1-R.Ks));
+ const Rm=R.Reff+tv/2;
+ if(v.tipo==="V"){
+  const b=phi/2; const hd=v.Dv/2;
+  let dep=Rm*(1-Math.cos(b)); if(Rm*Math.sin(b)<hd) dep+= (hd-Rm*Math.sin(b))*Math.tan(b);
+  const y0=tv/2-dep;
+  const right=turtle(0,y0,0,[["A",Rm,b],["L",v.L2+hd]]), left=turtle(0,y0,PI,[["A",Rm,-b],["L",v.L1+hd]]);
+  const pts=left.slice().reverse().concat(right.slice(1));
+  const yin=y0+tv/2; const lift=un*R.hmax*0.8;
+  return {pts,arc:[...left.filter(p=>p.seg===0).reverse(),...right.filter(p=>p.seg===0)],yin,lift,phi};
+ } else if(v.tipo==="U"){
+  const dep=u*R.hmax*(un>0?1:1); const phiU=un>0?(PI/2)*(1-un*(1-R.Ks)):(PI/2)*clamp(u*1.5,0,1);
+  const fw=Math.max(0,(v.Dv-2*tv)/2-R.Reff);
+  const y0=tv/2-dep;
+  const right=turtle(0,y0,0,[["L",fw],["A",Rm,phiU],["L",v.L2]]), left=turtle(0,y0,PI,[["L",fw],["A",Rm,-phiU],["L",v.L1]]);
+  const pts=left.slice().reverse().concat(right.slice(1));
+  return {pts,arc:right.filter(p=>p.seg===1),arc2:left.filter(p=>p.seg===1),yin:y0+tv/2,lift:un*R.hmax,fw,phi:phiU};
+ } else {
+  const phiW=un>0?alpha*(1-un*(1-R.Ks)):alpha*clamp(u*1.25,0,1);
+  const right=turtle(0,tv/2,0,[["A",Rm,-phiW],["L",v.L2]]), left=turtle(0,tv/2,PI,[["L",v.L1]]);
+  const pts=left.slice().reverse().concat(right.slice(1));
+  return {pts,arc:right.filter(p=>p.seg===0),yin:tv,lift:un*R.hmax,phi:phiW};
+ }
+}
+function drawDoblado(ctx,w,h,R,v,m,x){
+ const t=v.t;
+ const span=v.L1+v.L2+v.Dv+4*t;
+ const s0=(w-60)/span; const tv=Math.max(t,7/s0); const exag=tv>t*1.05;
+ const g0=dobGeom(R,v,0,tv), g1=dobGeom(R,v,1,tv), g=dobGeom(R,v,x,tv);
+ const all=g0.pts.concat(g1.pts);
+ let bb=[Math.min(...all.map(p=>p.x))-4*tv,Math.min(...all.map(p=>p.y))-3*tv,Math.max(...all.map(p=>p.x))+4*tv,Math.max(...all.map(p=>p.y))+Math.max(8*tv,R.hmax*0.6)];
+ if(v.tipo==="V"){bb[1]=Math.min(bb[1],-(v.Dv/2)/Math.tan(Math.max((180-R.alpha)/2*PI/180,0.15))-3*tv);}
+ const V=viewFit(bb,w,h,28);
+ // matriz
+ if(v.tipo==="V"){const hd=v.Dv/2;const gam=Math.max((180-R.alpha)/2*PI/180,0.15);const gd=Math.min(hd/Math.tan(gam),bb[3]-bb[1]);
+  const base=bb[1]+tv; hatch(ctx,V,[[bb[0]+tv,base],[bb[2]-tv,base],[bb[2]-tv,0],[hd,0],[0,-gd],[-hd,0],[bb[0]+tv,0]]);}
+ else if(v.tipo==="U"){const hw=v.Dv/2;const base=bb[1]+tv;hatch(ctx,V,rect(bb[0]+tv,base,-hw,0));hatch(ctx,V,rect(hw,base,bb[2]-tv,0));
+  if(R.acu) hatch(ctx,V,rect(-hw,base,hw,-R.hmax-tv*0.5));}
+ else {hatch(ctx,V,rect(bb[0]+tv,bb[1]+tv,0,0));poly(ctx,V,rect(bb[0]+tv,tv*1.02,-tv*0.3,tv*4),alpha(css("tool-2"),0.8),null);}
+ // lámina
+ poly(ctx,V,thick(g.pts,tv),css("sheet"),css("ink-2"));
+ const inten=clamp(R.eext*5*(g.phi/(R.alpha*PI/180||1)),0.15,0.95);
+ const strokeArc=a=>{if(!a||a.length<2) return;ctx.strokeStyle=alpha(css("accent"),inten);ctx.lineWidth=tv*V.s*0.95;ctx.lineCap="butt";ctx.beginPath();a.forEach((p,i)=>i?ctx.lineTo(V.X(p.x),V.Y(p.y)):ctx.moveTo(V.X(p.x),V.Y(p.y)));ctx.stroke();};
+ strokeArc(g.arc);strokeArc(g.arc2);
+ // punzón
+ const Rv=Math.max(R.Reff,0.05);
+ if(v.tipo==="V"){const gam=Math.min(Math.max((180-R.alpha)/2*PI/180,0.12)*0.92,30*PI/180);const yt=g.yin+g.lift;const H=bb[3]-yt;
+  const sh=Math.max(span*0.05,3*tv);const hw=Math.min(H*Math.tan(gam),sh);const hy=yt+Rv+hw/Math.tan(gam);
+  const arcP=[];for(let i=0;i<=12;i++){const a=(3*PI/2-gam)+(2*gam)*i/12;arcP.push([Rv*Math.cos(a),yt+Rv+Rv*Math.sin(a)]);}
+  hatch(ctx,V,[[-sh,bb[3]],[-sh,Math.min(hy,bb[3])],...arcP,[sh,Math.min(hy,bb[3])],[sh,bb[3]]],css("steel-2"));}
+ else if(v.tipo==="U"){const hw=g.fw+R.Reff;const yt=g.yin+g.lift;hatch(ctx,V,rect(-hw,yt,hw,bb[3]),css("steel-2"));}
+ else {const px=R.Reff+tv*1.1;const yt=tv+ (1-Math.min(x,1))*R.hmax*1.05 - R.hmax*0.05 + g.lift; hatch(ctx,V,rect(px,Math.max(yt-R.hmax,bb[1]+tv),px+Math.max(3*tv,span*0.05),bb[3]),css("steel-2"));}
+ const i=Math.min(R.ys.length-1,Math.round(Math.min(x,1)*200));const Fn=x>1?0:R.ys[i];
+ arrow(ctx,V.X(v.tipo==="W"?R.Reff+tv*3:0),V.Y(bb[3])+6,0,34,css("bad"),`F = ${fmt(Fn,2)} kN`);
+ ctx.font="600 13px "+css("font");ctx.fillStyle=css("ink");ctx.textAlign="right";ctx.textBaseline="top";
+ const ang=g.phi*180/PI;ctx.fillText(`Ángulo de doblez: ${fmt(ang,1)}°`,w-14,12);
+ if(x>1){ctx.fillStyle=css("warn");ctx.fillText(`Recuperación: ${fmt(R.alpha-R.alphaF,2)}°`,w-14,30);}
+ phaseText(ctx,w,x,exag?"Espesor exagerado para mayor claridad":"");
+}
+
+/* ================= SIMULACIÓN: EMBUTICIÓN ================= */
+function embPath(R,v,s,tv,Rc){
+ const d1=R.d1, rp=Math.min(v.rp,d1/2*0.9), Rd=v.Rd;
+ const rpm=rp+tv/2, Rdm=Rd+tv/2, S0=rpm+Rdm;
+ const Ri=d1/2+Rd;
+ const fb=Math.max(0,d1/2-rp);
+ let g,Lw; if(s<S0){g=PI/2*Math.pow(Math.max(s,0)/S0,0.7);Lw=g>1e-3?Math.max(0,(s-S0*(1-Math.cos(g)))/Math.sin(g)):0;}else{g=PI/2;Lw=s-S0;}
+ const flange=Rc-Ri;
+ const y0=tv/2-s;
+ if(flange>0.3){return turtle(0,y0,0,[["L",fb],["A",rpm,g],["L",Lw],["A",Rdm,-g],["L",flange]]);}
+ const wall=Math.max(0,Math.min(Lw+ (S0*(1-0))*0, R.h1-rp)); // vaso completo
+ return turtle(0,y0,0,[["L",fb],["A",rpm,PI/2],["L",Math.max(0,R.h1-rpm-tv/2)]]);
+}
+function drawEmbuticion(ctx,w,h,R,v,m,x){
+ const u=Math.min(x,1),un=Math.max(0,(x-1)/0.2),t=v.t;
+ const R0=R.D0/2, d1=R.d1, Ri=d1/2+v.Rd;
+ const Wx=R0*1.12;
+ const s0=(w-40)/(2*Wx); const tv=Math.max(t,6/s0); const exag=tv>1.05*t;
+ const h1=R.h1;
+ const bb=[-Wx,-h1*1.12-tv*6,Wx,tv*6+h1*0.12];
+ const V=viewFit(bb,w,h,22);
+ const gap=Math.max(v.cl*t,tv*1.02);
+ const s=un>0?h1*1.02:u*h1*1.0;
+ const Rc=Math.sqrt(Math.max(Ri*Ri,R0*R0-Math.min(u*1.0,1)*(R0*R0-Ri*Ri)));
+ // matriz (derecha e izquierda)
+ const dieIn=d1/2+gap, dieB=-Math.min(h1*0.55,R0*0.6)-2*tv;
+ [1,-1].forEach(sg=>{const P=[];P.push([sg*Wx,dieB]);P.push([sg*dieIn,dieB]);const N=10;for(let i=0;i<=N;i++){const a=PI+ (PI/2)*i/N; P.push([sg*(dieIn+v.Rd+v.Rd*Math.cos(a)),-v.Rd+v.Rd*Math.sin(a)+v.Rd*0]);}
+  const Q=[[sg*Wx,dieB],[sg*dieIn,dieB]];for(let i=0;i<=N;i++){const a=PI-(PI/2)*i/N;Q.push([sg*(dieIn+v.Rd+v.Rd*Math.cos(a)),-v.Rd+v.Rd*Math.sin(a)]);}Q.push([sg*Wx,0]);hatch(ctx,V,Q);});
+ // lámina
+ let path; const sheet=css("sheet");
+ const tearS=h1*0.55;
+ const sEff=R.tear&&s>tearS&&un===0?tearS:s;
+ path=embPath(R,v,sEff,tv,Rc);
+ if(R.wrinkle&&un===0){const amp=tv*0.9*R.wrinkle*u;path=path.map(p=>p.seg===4?{...p,y:p.y+amp*Math.sin((p.x-Ri)/Math.max(R0*0.04,tv*3)*PI)*Math.min(1,(p.x-Ri)/(R0*0.1))}:p);}
+ const drawHalf=(pts,sg,dy=0,col=sheet)=>{const q=pts.map(p=>({x:sg*p.x,y:p.y+dy,seg:p.seg}));poly(ctx,V,thick(sg>0?q:q.slice().reverse(),tv),col,css("ink"),1.2);};
+ if(R.tear&&s>tearS&&un===0){
+  const bottom=path.filter(p=>p.seg<=1), top=path.filter(p=>p.seg>=1);
+  const dy=-(s-tearS);
+  [1,-1].forEach(sg=>{drawHalf(top,sg);drawHalf(bottom,sg,dy);});
+  const cr=bottom[bottom.length-1];ctx.fillStyle=css("bad");ctx.font="700 13px "+css("font");ctx.textAlign="left";ctx.fillText("Desgarre",V.X(cr.x)+8,V.Y(cr.y+dy/2));
+ } else {
+  const dy=un>0?-un*tv*3:0;
+  [1,-1].forEach(sg=>drawHalf(path,sg,dy));
+  // centro (fondo) une ambas mitades
+ }
+ // pisador
+ const hb=Math.max(tv*3,R0*0.08);
+ const holdY=tv*1.01+(un>0?un*hb*2:0)+(R.wrinkle?tv*0.9*R.wrinkle*u:0);
+ [1,-1].forEach(sg=>poly(ctx,V,rect(sg*(dieIn+v.Rd*0.6),holdY,sg*Wx,holdY+hb),alpha(css("tool-2"),0.9),null));
+ // punzón
+ const rp=Math.min(v.rp,d1/2*0.9);
+ const py=tv-s+ (un>0? un*(h1*1.02+tv*8):0);
+ const P=[[-d1/2,bb[3]]];const N=10;for(let i=0;i<=N;i++){const a=PI-(PI/2)*i/N;P.push([-d1/2+rp+rp*Math.cos(a),py+rp-rp*Math.sin(a)]);}
+ for(let i=0;i<=N;i++){const a=3*PI/2+(PI/2)*i/N;P.push([d1/2-rp+rp*Math.cos(a),py+rp+rp*Math.sin(a)]);}P.push([d1/2,bb[3]]);
+ hatch(ctx,V,P,css("steel-2"));
+ // fuerzas
+ const i=Math.min(R.yT.length-1,Math.round(u*200/1.08));const Fn=un>0?0:R.yT[i];
+ arrow(ctx,V.X(0),V.Y(bb[3])+4,0,32,css("bad"),`F = ${fmt(Fn,1)} kN`);
+ if(un===0&&u<1){arrow(ctx,V.X(Wx*0.8),V.Y(holdY+hb)-26,0,22,css("c5"),`Fh`);arrow(ctx,V.X(-Wx*0.8),V.Y(holdY+hb)-26,0,22,css("c5"),"");}
+ phaseText(ctx,w,x,(R.n>1?`Etapa 1 de ${R.n}. `:"")+(exag?"Espesor exagerado.":""));
+ // vista superior + etapas
+ const r=Math.min(44,h*0.13);const cx=w-r-18,cy=r+20;
+ ctx.setLineDash([4,3]);ctx.strokeStyle=css("ink-2");ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,r,0,2*PI);ctx.stroke();ctx.setLineDash([]);
+ const rr=r*Rc/R0;ctx.fillStyle=alpha(css("sheet"),0.45);ctx.strokeStyle=css("steel-2");ctx.lineWidth=2;ctx.beginPath();
+ const ears=x>=0.98&&Math.abs(m.dr)>0.05; const re=r*(d1/2)/R0;
+ if(ears){for(let k=0;k<=72;k++){const a=k/72*2*PI;const rad=re*(1+0.08*Math.min(1,Math.abs(m.dr))*Math.cos(4*a));const X=cx+rad*Math.cos(a),Y=cy+rad*Math.sin(a);k?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}}
+ else ctx.arc(cx,cy,Math.max(rr,re),0,2*PI);
+ ctx.fill();ctx.stroke();ctx.strokeStyle=css("accent");ctx.beginPath();ctx.arc(cx,cy,re,0,2*PI);ctx.stroke();
+ ctx.fillStyle=css("ink-2");ctx.font="11px "+css("font");ctx.textAlign="center";ctx.fillText(ears?"Orejas por Δr":"Vista superior",cx,cy+r+13);
+ if(R.n>1){const bx=14,by=h-14;const maxH=Math.min(h*0.28,90);const hMax=Math.max(...R.hs);const sc=Math.min(maxH/hMax,(w*0.35)/(R.ds.reduce((a,b)=>a+b,0)+R.n*10));
+  let xx=bx;ctx.font="11px "+css("font");ctx.fillStyle=css("ink-2");ctx.textAlign="left";ctx.fillText("Secuencia de etapas",bx,by-maxH-8);
+  R.ds.forEach((dd,k)=>{const ww=dd*sc,hh=Math.min(R.hs[k],v.h*1.2)*sc;ctx.strokeStyle=k===0?css("accent"):css("steel-2");ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xx,by-hh);ctx.lineTo(xx,by);ctx.lineTo(xx+ww,by);ctx.lineTo(xx+ww,by-hh);ctx.stroke();xx+=ww+10;});}
+}
+
+/* ================= SIMULACIÓN: ESTIRADO ================= */
+function stretchShape(a,Rd,H){ // devuelve {len, psi, C}
+ if(H<=1e-9) return {len:2*a,psi:0,cy:H-Rd};
+ const cy=H-Rd; const dist=Math.hypot(a,cy); const Lt=Math.sqrt(Math.max(0,dist*dist-Rd*Rd));
+ const th=Math.atan2(a,-cy); const psi=Math.max(0,th-Math.acos(Math.min(1,Rd/dist)));
+ return {len:2*(Lt+Rd*psi),psi,cy};
+}
+function drawEstirado(ctx,w,h,R,v,m,x){
+ const u=Math.min(x,1),un=Math.max(0,(x-1)/0.2),t=v.t;
+ const a=v.L0/2, Rd=a*1.3;
+ const target=L=>{let lo=0,hi=a*1.2;for(let i=0;i<50;i++){const mid=(lo+hi)/2;stretchShape(a,Rd,mid).len<L?lo=mid:hi=mid;}return (lo+hi)/2;};
+ const Hmax=target(v.L0*(1+v.e/100));
+ const H=target(v.L0*(1+v.e/100*u));
+ const grip=a*0.18, jw=a*0.1;
+ const bb=[-a-grip-jw,-Hmax*0.2-a*0.25,a+grip+jw,Hmax*1.25+a*0.12];
+ const V=viewFit(bb,w,h,24);
+ const tv=Math.max(t,5/V.s);
+ // bloque de forma
+ const sh=stretchShape(a,Rd,Hmax);const psiMax=Math.min(Math.asin(Math.min(1,0.8*a/Rd)),PI/2);
+ const base=bb[1]+a*0.05;const cyNow=H-Rd;
+ const blk=[[-Rd*Math.sin(psiMax),base]];for(let i=0;i<=40;i++){const p=-psiMax+2*psiMax*i/40;blk.push([Rd*Math.sin(p),cyNow+Rd*Math.cos(p)-tv/2]);}blk.push([Rd*Math.sin(psiMax),base]);
+ hatch(ctx,V,blk);
+ // lámina
+ const S=stretchShape(a,Rd,H);
+ const pts=[{x:-a-grip,y:0}];pts.push({x:-a,y:0});
+ for(let i=0;i<=40;i++){const p=-S.psi+2*S.psi*i/40;pts.push({x:Rd*Math.sin(p),y:S.cy+Rd*Math.cos(p)});}
+ pts.push({x:a,y:0});pts.push({x:a+grip,y:0});
+ poly(ctx,V,thick(pts,tv),css("sheet"),css("ink-2"));
+ const inten=clamp(R.eps*u*6,0.1,0.9);
+ ctx.strokeStyle=alpha(R.margen<0?css("bad"):css("accent"),inten);ctx.lineWidth=tv*V.s*0.9;ctx.beginPath();pts.slice(1,-1).forEach((p,i)=>i?ctx.lineTo(V.X(p.x),V.Y(p.y)):ctx.moveTo(V.X(p.x),V.Y(p.y)));ctx.stroke();
+ if(R.margen<0&&u>0.85){ctx.fillStyle=css("bad");ctx.font="700 13px "+css("font");ctx.textAlign="center";ctx.fillText("Estricción y rotura",V.X(0),V.Y(H)-18);}
+ // mordazas
+ const open=un*tv*3;
+ [-1,1].forEach(sg=>{const x0=sg*(a+grip*0.1),x1=sg*(a+grip+jw);poly(ctx,V,rect(Math.min(x0,x1),tv/2+open,Math.max(x0,x1),tv/2+open+a*0.08),css("tool"),null);poly(ctx,V,rect(Math.min(x0,x1),-tv/2-open-a*0.08,Math.max(x0,x1),-tv/2-open),css("tool"),null);});
+ const i=Math.min(R.ys.length-1,Math.round(u*200/1.6));
+ const Fn=un>0?0:R.ys[i];
+ arrow(ctx,V.X(-a-grip*0.5),V.Y(0)-40,-32,0,css("bad"),"");arrow(ctx,V.X(a+grip*0.5),V.Y(0)-40,32,0,css("bad"),`F = ${fmt(Fn,1)} kN`);
+ arrow(ctx,V.X(0),V.Y(base)+30,0,-24,css("c5"),"");
+ ctx.font="600 13px "+css("font");ctx.fillStyle=css("ink");ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(`Alargamiento: ${fmt(v.e*u,2)} %`,w-14,12);
+ phaseText(ctx,w,x,"Espesor exagerado para mayor claridad");
+}
+const DRAW={corte:drawCorte,doblado:drawDoblado,embuticion:drawEmbuticion,estirado:drawEstirado};
+</script>
+<script>
+"use strict";
+/* ================= ESTADO ================= */
+const S={proc:"corte",mat:{},v:{},ex:{},x:60,R:null,runs:[],meta:{est:"",grupo:"",curso:"Procesos de manufactura",obs:""},playing:false};
+function lsGet(k,d){try{const r=localStorage.getItem(k);return r?JSON.parse(r):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+const $=id=>document.getElementById(id);
+const matById=id=>MATS.find(m=>m.id===id)||MATS[0];
+function loadExample(p,i){const P=PROCS[p],ex=P.examples[i];S.v[p]={...P.base,...ex.v};S.mat[p]=ex.mat;S.ex[p]=i;}
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* ================= DIÁLOGO DE INFORMACIÓN ================= */
+function currentValue(k){
+ const p=S.proc,v=S.v[p],m=matById(S.mat[p]);
+ if(k==="material") return m.name;
+ if(k==="ejemplo"){const i=S.ex[p];return i!=null?PROCS[p].examples[i].n:"Pieza personalizada";}
+ if(k==="carrera") return fmt(S.x,0)+" %";
+ if(S.R){const o=S.R.out.find(o=>o.k===k);if(o) return (typeof o.v==="number"?fmt(o.v,o.d):o.v)+" "+(o.u||"");}
+ if(S.R&&S.R.C&&k in S.R.C) return money(S.R.C[k]);
+ if(k==="costoTotal"&&S.R) return money(S.R.C.tot)+" por pieza";
+ if(v&&k in v){const d=PROCS[p].inputs.concat(COMMON_PROD,COMMON_COST).find(f=>f.k===k);
+  if(d&&d.type==="sel"){const o=d.opts.find(o=>o[0]===String(v[k]));return o?o[1]:v[k];}
+  if(d&&d.type==="chk") return v[k]?"Activado":"Desactivado";
+  return fmt(+v[k],Number.isInteger(+v[k])?0:2)+" "+(V[k].u||"");}
+ if(k in m) return (typeof m[k]==="number"?fmt(m[k],m[k]<10?2:0):m[k])+" "+(V[k].u||"");
+ return null;}
+function openInfo(k){const d=V[k];if(!d) return;
+ $("dlgTitle").textContent=d.n;
+ $("dlgSym").textContent=[d.s,d.u?"["+d.u+"]":""].filter(Boolean).join("  ");
+ const cv=currentValue(k);
+ let html="";
+ if(cv!=null&&!k.startsWith("g_")) html+=`<div class="now"><b>Valor actual:</b> ${cv}</div>`;
+ html+=`<h4>¿Qué es?</h4><p>${d.d}</p>`;
+ if(d.p) html+=`<h4>Efecto en el proceso</h4><p>${d.p}</p>`;
+ if(d.q) html+=`<h4>Efecto en la pieza</h4><p>${d.q}</p>`;
+ if(d.e) html+=`<h4>Ecuación</h4><span class="eq">${d.e}</span>`;
+ $("dlgBody").innerHTML=html;
+ const dl=$("info"); if(dl.showModal) dl.showModal(); else dl.setAttribute("open","");}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-info]");if(b){e.preventDefault();openInfo(b.dataset.info);}});
+$("dlgClose").onclick=()=>$("info").close();
+$("info").addEventListener("click",e=>{if(e.target.id==="info") $("info").close();});
+const ib=k=>`<button class="i" data-info="${k}" aria-label="Información: ${V[k]?V[k].n:k}" type="button">i</button>`;
+
+/* ================= CONSTRUCCIÓN DE LA INTERFAZ ================= */
+function renderProcbar(){
+ $("procbar").innerHTML=Object.entries(PROCS).map(([k,P])=>`<button class="procbtn" data-proc="${k}" aria-pressed="${k===S.proc}">${P.icon}<div><b>${P.short}</b><span>${P.sub}</span></div></button>`).join("");
+ $("procbar").querySelectorAll(".procbtn").forEach(b=>b.onclick=()=>setProc(b.dataset.proc));}
+function fieldHTML(f,v){const d=V[f.k];if(f.show&&!f.show(v)) return "";
+ const lab=`<label for="in_${f.k}">${d.n}${d.s?` <span class="sy">${d.s}</span>`:""} ${ib(f.k)}</label>`;
+ if(f.type==="sel") return `<div class="field wide">${lab}<div class="inwrap"><select id="in_${f.k}" data-k="${f.k}">${f.opts.map(o=>`<option value="${o[0]}" ${String(v[f.k])===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></div></div>`;
+ if(f.type==="chk") return `<div class="field chk"><input type="checkbox" id="in_${f.k}" data-k="${f.k}" ${v[f.k]?"checked":""}>${lab}</div>`;
+ return `<div class="field">${lab}<div class="inwrap"><input type="number" inputmode="decimal" id="in_${f.k}" data-k="${f.k}" value="${v[f.k]}" min="${f.min}" max="${f.max}" step="${f.step}"><span class="u">${d.u}</span></div></div>`;}
+function renderInputs(){const p=S.proc,v=S.v[p];
+ $("procInputs").innerHTML=PROCS[p].inputs.map(f=>fieldHTML(f,v)).join("");
+ $("prodInputs").innerHTML=COMMON_PROD.map(f=>fieldHTML(f,v)).join("");
+ $("costInputs").innerHTML=COMMON_COST.map(f=>fieldHTML(f,{...v})).join("");
+ document.querySelectorAll("#procInputs [data-k],#prodInputs [data-k],#costInputs [data-k]").forEach(el=>{
+  const ev=el.type==="number"?"input":"change";
+  el.addEventListener(ev,()=>onInput(el));});}
+function onInput(el){const p=S.proc,k=el.dataset.k,all=PROCS[p].inputs.concat(COMMON_PROD,COMMON_COST),f=all.find(f=>f.k===k);
+ let val;
+ if(f.type==="chk") val=el.checked; else if(f.type==="sel") val=el.value;
+ else {val=parseFloat(el.value);const bad=!isFinite(val)||val<f.min||val>f.max;el.parentElement.style.borderColor=bad?css("bad"):"";
+  el.title=bad?`Valor válido entre ${f.min} y ${f.max}`:"";if(bad) return;}
+ S.v[p][k]=val;S.ex[p]=null;renderExamples();
+ if(f.show!==undefined||k==="forma"||k==="tipo") {renderInputs();const n=$("in_"+k);if(n) n.focus();}
+ compute();}
+function renderMatSelect(){const p=S.proc;$("matSel").innerHTML=MATS.map(m=>`<option value="${m.id}" ${m.id===S.mat[p]?"selected":""}>${m.name}</option>`).join("");renderMatProps();}
+function renderMatProps(){const m=matById(S.mat[S.proc]);
+ const rows=[["E",m.E,"GPa",0],["Y",m.Y,"MPa",0],["UTS",m.UTS,"MPa",0],["K",m.K,"MPa",0],["n",m.n,"",2],["r",m.r,"",2],["dr",m.dr,"",2],["RA",m.RA,"%",0],["el",m.el,"%",0],["rho",m.rho,"kg/m³",0],["price",m.price,"COP/kg",0],["Ac",m.Ac,"",3]];
+ $("matProps").innerHTML=rows.map(([k,val,u,d])=>`<div><span>${V[k].s||V[k].n} ${ib(k)}</span><span>${fmt(val,d)} ${u}</span></div>`).join("");}
+$("matSel").onchange=e=>{S.mat[S.proc]=e.target.value;S.ex[S.proc]=null;renderExamples();renderMatProps();compute();};
+function renderExamples(){const p=S.proc,i=S.ex[p];
+ $("exChips").innerHTML=PROCS[p].examples.map((e,k)=>`<button class="chip" data-ex="${k}" aria-pressed="${k===i}">${e.n}</button>`).join("");
+ $("exDesc").textContent=i!=null?PROCS[p].examples[i].d:"Pieza personalizada: modificaste los valores del ejemplo.";
+ $("exChips").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{loadExample(p,+b.dataset.ex);renderAll();});}
+function setProc(p){S.proc=p;S.x=60;renderAll();}
+function renderAll(){renderProcbar();renderMatSelect();renderExamples();renderInputs();
+ const P=PROCS[S.proc];$("stageTitle").textContent=P.name;$("stageSub").textContent=P.sub;
+ P.charts.forEach((c,i)=>{$("ch"+(i+1)+"t").textContent=c[0];$("ch"+(i+1)+"i").dataset.info=c[1];});
+ $("stroke").value=S.x;compute();}
+
+/* ================= CÁLCULO Y RESULTADOS ================= */
+function verdictOf(W){return W.some(w=>w.l==="bad")?"bad":W.some(w=>w.l==="warn")?"warn":"ok";}
+const VERD={ok:"Proceso viable",warn:"Viable con riesgos",bad:"No viable"};
+function compute(){const p=S.proc,m=matById(S.mat[p]),v=S.v[p];
+ S.R=MODELS[p](m,v);const R=S.R;
+ const vd=verdictOf(R.W);$("verdictBadge").className="badge "+vd;$("verdictBadge").textContent=VERD[vd];
+ $("warnList").innerHTML=(R.W.length?R.W:[{l:"ok",m:"Sin defectos previstos con estas condiciones. Todas las verificaciones están dentro de los límites."}]).map(w=>`<li class="${w.l}">${w.m}</li>`).join("");
+ $("results").innerHTML=R.out.map(o=>Array.isArray(o)?`<div class="rgroup">${o[0]}</div>`:
+  `<div class="rcard ${o.st||""}"><div class="t"><span>${o.lab||V[o.k].n}</span>${ib(o.k)}</div><div class="v">${typeof o.v==="number"?fmt(o.v,o.d):o.v}<small>${o.u||""}</small></div></div>`).join("");
+ renderCosts();drawAll();}
+const COSTK=[["cMat","Material","c1"],["cMaq","Máquina","c2"],["cMO","Mano de obra","c3"],["cE","Energía","c5"],["cH","Herramental","c4"]];
+function renderCosts(){const C=S.R.C,v=S.v[S.proc];
+ $("costBar").innerHTML=COSTK.map(([k,,c])=>`<div style="width:${Math.max(0,C[k]/C.tot*100)}%;background:var(--${c})" title="${k}"></div>`).join("");
+ $("costTbl").innerHTML=`<tr><th>Componente</th><th class="n">COP/pieza</th><th class="n">%</th></tr>`+COSTK.map(([k,n,c])=>`<tr><td><span class="sw" style="background:var(--${c})"></span>${n} ${ib(k)}</td><td class="n">${money(C[k])}</td><td class="n">${fmt(C[k]/C.tot*100,1)}</td></tr>`).join("")+
+ `<tr><td><b>Costo unitario</b> ${ib("costoTotal")}</td><td class="n"><b>${money(C.tot)}</b></td><td class="n">100</td></tr>`;
+ const nSt=S.R.n||1;
+ $("costLot").innerHTML=`<tr><th>Producción</th><th class="n">Valor</th></tr>
+ <tr><td>Tiempo de ciclo ${ib("tciclo")}</td><td class="n">${fmt(C.tc,2)} s</td></tr>
+ <tr><td>Piezas por hora</td><td class="n">${fmt(3600/C.tc,0)}</td></tr>
+ <tr><td>Energía por pieza</td><td class="n">${fmt(C.kWh*1000,2)} Wh</td></tr>
+ <tr><td>Horas de prensa para el lote</td><td class="n">${fmt(C.tc*v.lote/3600,1)} h</td></tr>
+ <tr><td>Tamaño del lote ${ib("lote")}</td><td class="n">${fmt(v.lote,0)}</td></tr>
+ <tr><td><b>Costo total del lote</b></td><td class="n"><b>${money(C.lotTot)}</b></td></tr>`;}
+
+/* ================= DIBUJO ================= */
+function drawSim(cv,p,R,v,m,x){const c=prep(cv);if(!c) return;DRAW[p](c.ctx,c.w,c.h,R,v,m,x);}
+function chartCfg(p,idx,R,v,m,x){const u=Math.min(x,1);
+ const C1=css("c1"),C2=css("c2"),C3=css("c3"),C4=css("c4"),C5=css("c5");
+ const flowSeries=(emax)=>{const xs=[],ys=[];for(let i=0;i<=120;i++){const e=emax*i/120;xs.push(e);ys.push(flow(m,e));}return {x:xs,y:ys,c:C1,label:"σf = K·εⁿ"};};
+ const fld=(pts)=>{const xs=[],ys=[];for(let i=0;i<=80;i++){const e2=-0.4+0.8*i/80;xs.push(e2);ys.push(flc(m,v.t,e2));}
+  return {xlab:"Deformación menor ε₂",ylab:"Deformación mayor ε₁",series:[{x:xs,y:ys,c:C2,label:"Curva límite"},{x:xs,y:ys.map(y=>y*0.9),c:C5,dash:[5,4],label:"Margen 10 %"}],xr:[-0.4,0.4],yr:[0,Math.max(0.8,...pts.map(q=>q.y*1.15))],pts,vl:[{x:0,c:css("ink-2"),label:"def. plana"}]};};
+ if(p==="corte"){
+  if(idx===0) return {xlab:"Penetración del punzón δ (mm)",ylab:"Fuerza (kN)",series:[{x:R.xs,y:R.ys,c:C1,fill:true,label:"F(δ)"}],marker:x<=1?u*R.dEnd:null,vl:[{x:R.pt,c:C2,label:"fractura"}]};
+  if(idx===1) return "edge";
+  const e=R.strainOp;return {xlab:"Deformación verdadera ε",ylab:"Esfuerzo (MPa)",series:[flowSeries(Math.max(0.6,e*1.3))],hl:[{y:m.UTS,c:C3,label:"Su"},{y:0.7*m.UTS,c:C2,label:"resistencia al corte ≈ 0,7·Su"}],pts:[{x:e*u,y:flow(m,e*u),c:css("accent"),label:"zona de corte"}]};}
+ if(p==="doblado"){
+  if(idx===0) return {xlab:"Carrera del punzón (mm)",ylab:"Fuerza (kN)",series:[{x:R.xs,y:R.ys,c:C1,fill:true,label:"F(h)"}],marker:x<=1?u*R.hmax:null};
+  if(idx===1){const B=bendStress(m,v,R,Math.min(x,1));const lim=Math.max(m.Y,...B.sl.map(Math.abs),...B.sres.map(Math.abs))*1.1;
+   return {xlab:"Esfuerzo σ (MPa)",ylab:"Posición y/t (interior − / exterior +)",series:[{x:B.sl,y:B.ys,c:C1,label:"bajo carga"},{x:B.sres,y:B.ys,c:C2,dash:[5,4],label:"residual"}],xr:[-lim,lim],yr:[-0.5,0.5],vl:[{x:m.Y,c:C3,label:"Y"},{x:-m.Y,c:C3,label:"−Y"}]};}
+  const e=R.strainOp;return {xlab:"Deformación verdadera ε",ylab:"Esfuerzo (MPa)",series:[flowSeries(Math.max(0.3,e*1.5))],hl:[{y:m.Y,c:C3,label:"Y"}],pts:[{x:e*u,y:flow(m,e*u),c:css("accent"),label:"fibra exterior"}]};}
+ if(p==="embuticion"){
+  if(idx===0) return {xlab:"Carrera del punzón, 1.ª etapa (mm)",ylab:"Fuerza (kN)",series:[{x:R.xs,y:R.yT,c:C1,fill:true,label:"Total"},{x:R.xs,y:R.yD,c:C3,label:"Embutición"},{x:R.xs,y:R.yH,c:C5,dash:[5,4],label:"Pisador"}],marker:x<=1?u*R.h1:null};
+  if(idx===1){const F=flangeStress(m,v,R,u);const R0=R.D0/2,Ri=R.d1/2+v.Rd;const sbM=1.1*flow(m,Math.log(R0/Ri)+0.02);const yr=[-sbM*1.15,sbM*Math.log(R0/Ri)*1.15+10];
+   if(!F||!F.rs.length) return {xlab:"Radio r (mm)",ylab:"Esfuerzo (MPa)",series:[{x:[],y:[],c:C1}],xr:[Ri,R0],yr,msg:"La brida ya fue arrastrada por completo hacia la pared"};
+   return {xlab:"Radio r (mm)",ylab:"Esfuerzo (MPa)",series:[{x:F.rs,y:F.sr,c:C1,label:"σr radial"},{x:F.rs,y:F.st,c:C2,label:"σθ circunferencial"}],xr:[Ri,R0],yr,vl:[{x:F.Rc,c:css("ink-2"),label:"borde"}]};}
+  const R0=R.D0/2,Rc=Math.sqrt(Math.max(0,R0*R0-u*(R0*R0-(R.d1/2)**2)));const e2=Math.log(Math.max(Rc,R.d1/2)/R0);const e1=-e2*0.85;
+  let e1w=u*(-Math.log(1-R.thin/100)); if(R.tear) e1w=u*flc(m,v.t,0.02)*1.2;
+  return fld([{x:e2,y:e1,c:C3,label:"borde de la brida"},{x:0.02*u,y:e1w,c:R.tear?C2:C1,label:"radio del punzón"}]);}
+ if(p==="estirado"){
+  if(idx===0) return {xlab:"Alargamiento e (%)",ylab:"Fuerza (kN)",series:[{x:R.xs,y:R.ys,c:C1,fill:true,label:"F(e)"}],marker:x<=1?u*v.e:null,vl:[{x:v.e,c:C2,label:"objetivo"}]};
+  if(idx===1){const e=R.eps;return {xlab:"Deformación verdadera ε",ylab:"Esfuerzo (MPa)",series:[flowSeries(Math.max(e*1.6,m.n*1.3,0.1))],vl:[{x:m.n,c:C2,label:"ε = n (estricción)"}],pts:[{x:e*u,y:flow(m,e*u),c:css("accent"),label:"panel"}]};}
+  return fld([{x:R.e2*u,y:R.eps*u,c:R.margen<0?C2:C1,label:"panel"}]);}
+}
+function drawChart(cv,p,idx,R,v,m,x){const c=prep(cv);if(!c) return;const cfg=chartCfg(p,idx,R,v,m,x);
+ if(cfg==="edge") edgeProfile(c.ctx,c.w,c.h,R.zones,v.t); else chart(c.ctx,c.w,c.h,cfg);}
+function drawAll(){if(!S.R) return;const p=S.proc,v=S.v[p],m=matById(S.mat[p]),x=S.x/100;
+ drawSim($("sim"),p,S.R,v,m,x);[0,1,2].forEach(i=>drawChart($("ch"+(i+1)),p,i,S.R,v,m,x));
+ $("strokeLbl").textContent=x<=1?`Carga: ${fmt(S.x,0)} % de la carrera`:`Descarga (${fmt((x-1)/0.2*100,0)} %)`;}
+$("stroke").addEventListener("input",e=>{S.x=+e.target.value;drawAll();});
+$("playBtn").onclick=()=>{if(S.playing){S.playing=false;$("playBtn").textContent="▶ Simular";return;}
+ S.playing=true;$("playBtn").textContent="❚❚ Pausa";if(S.x>=120) S.x=0;let last=performance.now();
+ const step=now=>{if(!S.playing) return;const dt=now-last;last=now;S.x=Math.min(120,S.x+dt/1000*120/5);$("stroke").value=S.x;drawAll();
+  if(S.x>=120){S.playing=false;$("playBtn").textContent="↻ Repetir";return;}requestAnimationFrame(step);};requestAnimationFrame(step);};
+
+/* ================= PESTAÑAS ================= */
+function showTab(t){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+ document.querySelectorAll(".tab").forEach(s=>s.classList.toggle("active",s.id==="tab-"+t));
+ if(t==="lab") requestAnimationFrame(drawAll); if(t==="guia") requestAnimationFrame(drawGuide); if(t==="mat") renderMatTab(); if(t==="rep") renderReport();
+ window.scrollTo(0,0);}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function showGuide(g){document.querySelectorAll("#gnav button").forEach(b=>b.setAttribute("aria-current",b.dataset.g===g));
+ document.querySelectorAll(".gbody article").forEach(a=>a.classList.toggle("active",a.dataset.g===g));requestAnimationFrame(drawGuide);}
+document.querySelectorAll("#gnav button").forEach(b=>b.onclick=()=>showGuide(b.dataset.g));
+document.querySelectorAll("[data-goto]").forEach(b=>b.onclick=()=>{setProc(b.dataset.goto);showTab("lab");});
+$("goGuide").onclick=()=>{showTab("guia");showGuide(S.proc);};
+$("goRep").onclick=()=>showTab("rep");
+function drawGuide(){document.querySelectorAll(".gbody article.active canvas.gcanvas").forEach(cv=>{const p=cv.dataset.proc,P=PROCS[p],ex=P.examples[0];
+ const v={...P.base,...ex.v},m=matById(ex.mat);const R=MODELS[p](m,v);drawSim(cv,p,R,v,m,+cv.dataset.x);});}
+
+/* ================= MATERIALES ================= */
+function renderMatTab(){const cols=[["E",0],["Y",0],["UTS",0],["K",0],["n",2],["r",2],["dr",2],["RA",0],["el",0],["rho",0],["price",0],["Ac",3]];
+ $("matTable").innerHTML=`<tr><th>Material ${ib("material")}</th>${cols.map(([k])=>`<th class="n">${V[k].s||V[k].n} ${ib(k)}</th>`).join("")}<th></th></tr>`+
+  MATS.map(m=>`<tr><td>${m.name}</td>${cols.map(([k,d])=>`<td class="n">${fmt(m[k],d)}</td>`).join("")}<td><button class="btn" style="padding:3px 10px" data-use="${m.id}">Usar</button></td></tr>`).join("");
+ $("matTable").querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{S.mat[S.proc]=b.dataset.use;S.ex[S.proc]=null;showTab("lab");renderAll();toast("Material aplicado al proceso actual");});
+ requestAnimationFrame(()=>{const c=prep($("matChart"));if(!c) return;const pal=["c1","c2","c3","c4","c5"];
+  chart(c.ctx,c.w,c.h,{xlab:"Deformación verdadera ε",ylab:"Esfuerzo de flujo (MPa)",series:MATS.map((m,i)=>{const xs=[],ys=[];for(let j=0;j<=60;j++){const e=0.5*j/60;xs.push(e);ys.push(flow(m,e));}
+   return {x:xs,y:ys,c:css(pal[i%5]),dash:i>=5?[5,4]:[],lw:1.8};}),pts:[]});
+  const lg=MATS.map((m,i)=>`<span style="white-space:nowrap;margin-right:10px"><span class="sw" style="background:var(--${pal[i%5]});${i>=5?"outline:2px dashed var(--"+pal[i%5]+");background:transparent":""}"></span>${m.name.split(" ").slice(0,3).join(" ")}</span>`).join(" ");
+  let el=$("matLegend");if(!el){el=document.createElement("div");el.id="matLegend";el.style.cssText="font-size:.78rem;padding:6px 4px;color:var(--ink-2)";$("matChart").after(el);}el.innerHTML=lg;});}
+$("matForm").addEventListener("submit",e=>{e.preventDefault();const fd=new FormData(e.target);const m={id:"u"+Date.now(),name:fd.get("name"),fam:fd.get("fam")};
+ ["E","Y","UTS","K","n","r","dr","RA","el","rho","price","Ac"].forEach(k=>m[k]=parseFloat(fd.get(k)));
+ if(Object.values(m).some(v=>typeof v==="number"&&!isFinite(v))||m.Y>=m.UTS*1.2){toast("Revisa los valores: todos deben ser numéricos y Y no puede superar mucho a Su");return;}
+ MATS.push(m);const cu=lsGet("lab_mats",[]);cu.push(m);lsSet("lab_mats",cu);renderMatTab();renderMatSelect();toast("Material agregado a la base de datos");});
+
+/* ================= INFORME ================= */
+function snapshot(){const p=S.proc,v={...S.v[p]},m=matById(S.mat[p]),R=S.R,i=S.ex[p];
+ const key=R.out.filter(o=>!Array.isArray(o)&&["Fton","W","P"].includes(o.k));
+ return {when:new Date().toLocaleString("es-CO"),proc:p,procName:PROCS[p].name,mat:m.name,pieza:i!=null?PROCS[p].examples[i].n:"Pieza personalizada",
+  Fton:R.pr.ton,W:R.Wj,costo:R.C.tot,verd:verdictOf(R.W),t:v.t};}
+$("saveRun").onclick=()=>{S.runs.push(snapshot());lsSet("lab_runs",S.runs);toast(`Ensayo ${S.runs.length} agregado al informe`);};
+$("clearRuns").onclick=()=>{S.runs=[];lsSet("lab_runs",[]);renderReport();toast("Ensayos borrados");};
+$("printBtn").onclick=()=>{readMeta();window.print();};
+$("refreshRep").onclick=()=>{renderReport();toast("Informe actualizado");};
+function readMeta(){["est","grupo","curso","obs"].forEach(k=>{const el=$("rm_"+k);if(el) S.meta[k]=el.value;});lsSet("lab_meta",S.meta);}
+function img(fn,w=640,h=340){const c=document.createElement("canvas");c.width=w*2;c.height=h*2;c.style.width=w+"px";c.style.height=h+"px";
+ Object.defineProperty(c,"clientWidth",{value:w});Object.defineProperty(c,"clientHeight",{value:h});
+ const ctx=c.getContext("2d");ctx.setTransform(2,0,0,2,0,0);ctx.fillStyle=css("surface");ctx.fillRect(0,0,w,h);fn(ctx,w,h);return c.toDataURL("image/png");}
+function conclusions(){const p=S.proc,R=S.R,v=S.v[p],m=matById(S.mat[p]);const L=[];
+ L.push(`La operación requiere una fuerza máxima de ${fmt(R.pr.ton,2)} t; con la prensa disponible de ${fmt(v.prensa,0)} t la utilización es del ${fmt(R.pr.use,0)} % y la prensa estándar recomendada es de ${R.pr.rec} t.`);
+ const dom=COSTK.slice().sort((a,b)=>R.C[b[0]]-R.C[a[0]])[0];
+ L.push(`El costo unitario estimado es ${money(R.C.tot)} y el componente dominante es ${dom[1].toLowerCase()} (${fmt(R.C[dom[0]]/R.C.tot*100,0)} %).`);
+ if(p==="corte") L.push(`La holgura usada equivale a ${fmt(R.x,2)} veces la recomendada para ${m.name}; se obtiene una zona bruñida del ${fmt(R.zones.zB,0)} % del espesor y una rebaba de ${fmt(R.zones.hb,3)} mm.`);
+ if(p==="doblado") L.push(`El doblez de ${fmt(R.alpha,0)}° queda en ${fmt(R.alphaF,1)}° tras la recuperación elástica (Ks = ${fmt(R.Ks,4)}); para compensar habría que programar ${fmt(R.alpha/R.Ks,1)}°.`);
+ if(p==="embuticion") L.push(`El disco de ${fmt(R.D0,1)} mm da una relación de embutición de ${fmt(R.D0/v.Dp,2)} frente a un límite de ${fmt(R.LDR,2)}, por lo que se necesitan ${R.n} etapa${R.n>1?"s":""}.`);
+ if(p==="estirado") L.push(`La deformación verdadera de ${fmt(R.eps,3)} deja un margen de ${fmt(R.margen,0)} % frente a la curva límite; el espesor final es ${fmt(R.tf,3)} mm.`);
+ const vd=verdictOf(R.W);L.push(vd==="ok"?"No se prevén defectos con estas condiciones.":vd==="warn"?"El proceso es viable pero presenta riesgos que conviene corregir (ver verificaciones).":"Con estas condiciones el proceso no es viable; revisa las verificaciones para corregir las variables críticas.");
+ return L;}
+const OBJ={corte:"Determinar la fuerza, la energía, el herramental, la calidad del borde y el costo del corte por cizalladura de una pieza plana, y analizar el efecto de la holgura.",
+ doblado:"Calcular la fuerza de doblado, el desarrollo de la pieza y la recuperación elástica, verificando el radio mínimo del material.",
+ embuticion:"Dimensionar el disco, determinar la relación de embutición, el número de etapas, las fuerzas de punzón y pisador, y los riesgos de arrugas y desgarre.",
+ estirado:"Calcular la fuerza, el adelgazamiento y el margen frente a la curva límite en el estirado de un panel sobre un bloque de forma."};
+function renderReport(){if(!S.R) return;readMeta();const p=S.proc,R=S.R,v=S.v[p],m=matById(S.mat[p]),P=PROCS[p],i=S.ex[p];
+ const inRows=P.inputs.concat(COMMON_PROD).filter(f=>!f.show||f.show(v)).map(f=>`<tr><td>${V[f.k].n}</td><td>${V[f.k].s||""}</td><td class="n">${currentValue(f.k)}</td></tr>`).join("");
+ const outRows=R.out.map(o=>Array.isArray(o)?`<tr><th colspan="3">${o[0]}</th></tr>`:`<tr><td>${o.lab||V[o.k].n}</td><td>${V[o.k].s||""}</td><td class="n">${typeof o.v==="number"?fmt(o.v,o.d):o.v} ${o.u||""}</td></tr>`).join("");
+ const x=1;const ims=[["Simulación al final de la carrera",img((c,w,h)=>DRAW[p](c,w,h,R,v,m,x),640,340)]].concat(P.charts.map((c,k)=>[c[0],img((cx,w,h)=>{const cfg=chartCfg(p,k,R,v,m,x);cfg==="edge"?edgeProfile(cx,w,h,R.zones,v.t):chart(cx,w,h,cfg);})]));
+ const mt=[["E","GPa",0],["Y","MPa",0],["UTS","MPa",0],["K","MPa",0],["n","",2],["r","",2],["dr","",2],["RA","%",0],["rho","kg/m³",0],["price","COP/kg",0]];
+ $("report").innerHTML=`<h2>Informe de laboratorio: ${P.name}</h2>
+ <p style="color:var(--ink-2)">Laboratorio virtual de conformado de lámina metálica. Generado el ${new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"})}.</p>
+ <div class="rep-meta"><label>Estudiante<input id="rm_est" value="${S.meta.est||""}" placeholder="Nombre completo"></label><label>Grupo o código<input id="rm_grupo" value="${S.meta.grupo||""}"></label><label>Curso<input id="rm_curso" value="${S.meta.curso||""}"></label></div>
+ <h3>1. Objetivo</h3><p>${OBJ[p]}</p><p><b>Pieza:</b> ${i!=null?P.examples[i].n+". "+P.examples[i].d:"Pieza personalizada definida por el estudiante."}</p>
+ <h3>2. Material</h3><p><b>${m.name}</b></p><div class="tblwrap"><table class="tbl"><tr>${mt.map(([k])=>`<th class="n">${V[k].s||V[k].n}</th>`).join("")}</tr><tr>${mt.map(([k,u,d])=>`<td class="n">${fmt(m[k],d)} ${u}</td>`).join("")}</tr></table></div>
+ <h3>3. Variables de entrada</h3><div class="tblwrap"><table class="tbl"><tr><th>Variable</th><th>Símbolo</th><th class="n">Valor</th></tr>${inRows}</table></div>
+ <h3>4. Resultados</h3><div class="tblwrap"><table class="tbl">${outRows}</table></div>
+ <h3>5. Verificaciones del proceso</h3><p><span class="badge ${verdictOf(R.W)}">${VERD[verdictOf(R.W)]}</span></p><ul class="warnlist">${(R.W.length?R.W:[{l:"ok",m:"Sin defectos previstos."}]).map(w=>`<li class="${w.l}">${w.m}</li>`).join("")}</ul>
+ <h3>6. Costos</h3><div class="tblwrap"><table class="tbl"><tr><th>Componente</th><th class="n">COP/pieza</th><th class="n">%</th></tr>${COSTK.map(([k,n])=>`<tr><td>${n}</td><td class="n">${money(R.C[k])}</td><td class="n">${fmt(R.C[k]/R.C.tot*100,1)}</td></tr>`).join("")}
+ <tr><td><b>Costo unitario</b></td><td class="n"><b>${money(R.C.tot)}</b></td><td></td></tr><tr><td>Lote de ${fmt(v.lote,0)} piezas</td><td class="n">${money(R.C.lotTot)}</td><td></td></tr></table></div>
+ <h3>7. Simulación y curvas</h3><div class="rep-imgs">${ims.map(([c,src])=>`<figure><img src="${src}" alt="${c}"><figcaption>${c}</figcaption></figure>`).join("")}</div>
+ <h3>8. Conclusiones automáticas</h3><ul>${conclusions().map(c=>`<li>${c}</li>`).join("")}</ul>
+ <h3>9. Observaciones del estudiante</h3><textarea id="rm_obs" placeholder="Analiza los resultados: ¿qué variable cambiarías para mejorar la pieza o reducir el costo, y por qué?">${S.meta.obs||""}</textarea>
+ <h3>10. Comparación de ensayos guardados</h3>${S.runs.length?`<div class="tblwrap"><table class="tbl"><tr><th>#</th><th>Proceso</th><th>Pieza</th><th>Material</th><th class="n">t (mm)</th><th class="n">Fuerza (t)</th><th class="n">Energía (J)</th><th class="n">Costo (COP)</th><th>Estado</th></tr>
+  ${S.runs.map((r,k)=>`<tr><td>${k+1}</td><td>${r.procName}</td><td>${r.pieza}</td><td>${r.mat}</td><td class="n">${fmt(r.t,2)}</td><td class="n">${fmt(r.Fton,2)}</td><td class="n">${fmt(r.W,1)}</td><td class="n">${money(r.costo)}</td><td><span class="badge ${r.verd}">${VERD[r.verd]}</span></td></tr>`).join("")}</table></div>`:
+  `<p class="empty">Aún no hay ensayos guardados. En el laboratorio, pulsa «Agregar ensayo al informe» después de cada condición que quieras comparar.</p>`}
+ <h3>11. Referencias</h3><p style="font-size:.88rem">Groover, M. P. Fundamentos de manufactura moderna. Kalpakjian, S. y Schmid, S. R. Manufactura, ingeniería y tecnología. Schuler, Metal Forming Handbook. Los modelos del laboratorio son analíticos y semiempíricos con fines didácticos.</p>`;
+ ["est","grupo","curso","obs"].forEach(k=>{const el=$("rm_"+k);if(el) el.addEventListener("input",()=>{S.meta[k]=el.value;lsSet("lab_meta",S.meta);});});}
+
+/* ================= TEMA ================= */
+function effDark(){const t=document.documentElement.dataset.theme;if(t) return t==="dark";return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches;}
+$("themeBtn").onclick=()=>{const d=effDark()?"light":"dark";document.documentElement.dataset.theme=d;lsSet("lab_theme",d);drawAll();drawGuide();if($("tab-mat").classList.contains("active")) renderMatTab();};
+
+/* ================= INICIO ================= */
+(function init(){const th=lsGet("lab_theme",null);if(th) document.documentElement.dataset.theme=th;
+ lsGet("lab_mats",[]).forEach(m=>{if(m&&m.id&&!MATS.find(x=>x.id===m.id)) MATS.push(m);});
+ S.runs=lsGet("lab_runs",[]);S.meta={...S.meta,...lsGet("lab_meta",{})};
+ Object.keys(PROCS).forEach(p=>loadExample(p,0));
+ renderAll();
+ let raf=0;const ro=new ResizeObserver(()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if($("tab-lab").classList.contains("active")) drawAll();if($("tab-guia").classList.contains("active")) drawGuide();});});
+ ro.observe($("sim"));
+ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>drawAll());
+})();
+</script>
+</body>
+</html>
